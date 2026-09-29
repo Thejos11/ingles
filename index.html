@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Roulette Royale — Classroom</title>
+  <meta name="description" content="Interactive classroom roulette with points system and ranking.">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<div class="app">
+
+  <!-- ===== HEADER ===== -->
+  <header class="app-header">
+    <div class="header-left">
+      <h1 class="display">🎰 Roulette Royale</h1>
+      <p class="header-sub">Classroom Edition — Spin, answer, earn points.</p>
+    </div>
+    <div class="header-right">
+      <div class="header-stat">
+        <span class="stat-label">Players</span>
+        <span id="playerCount" class="stat-value display">0</span>
+      </div>
+      <div class="header-stat">
+        <span class="stat-label">Rounds</span>
+        <span id="roundCount" class="stat-value display">0</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- ===== MAIN GRID ===== -->
+  <main class="main-grid">
+
+    <!-- LEFT COLUMN: Player Management (agregar + lista) -->
+    <aside class="left-col">
+
+      <!-- Add players -->
+      <div class="panel p-panel lockable" id="addPanel">
+        <h2 class="section-title"><span class="icon">➕</span> Add Players</h2>
+        <label class="form-label" for="namesInput">Names (comma or newline separated)</label>
+        <textarea id="namesInput" rows="3" class="field" placeholder="Ana, Luis, Marta&#10;Peter"></textarea>
+        <div class="add-row">
+          <button id="addBtn" class="btn btn-primary">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 2v12M2 8h12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+            Add
+          </button>
+        </div>
+      </div>
+
+      <!-- Player list (tabla de jugadores) -->
+      <div class="panel p-panel">
+        <h2 class="section-title"><span class="icon">👥</span> Players</h2>
+        <div id="roster" class="roster-list scroll" style="max-height: 42vh;"></div>
+        <div class="panel-actions">
+          <button id="resetBtn" class="btn btn-ghost btn-sm lockable">Reset Points</button>
+          <button id="clearBtn" class="btn btn-danger btn-sm lockable">Clear All</button>
+        </div>
+      </div>
+    </aside>
+
+    <!-- CENTER: Wheel -->
+    <section class="center-col wheel-center">
+      <div id="wheelWrap">
+        <svg id="pointer" viewBox="0 0 46 60" aria-hidden="true">
+          <path d="M23 58 L3 8 Q23 -4 43 8 Z" fill="#c084fc" stroke="#7c3aed" stroke-width="3"/>
+          <circle cx="23" cy="16" r="5" fill="#e9d5ff"/>
+        </svg>
+        <canvas id="wheel" width="1000" height="1000" aria-label="Classroom roulette"></canvas>
+      </div>
+      <p id="statusText" aria-live="polite"></p>
+      <button id="spinBtn" class="btn btn-primary btn-spin">
+        🎲 SPIN
+      </button>
+    </section>
+
+    <!-- RIGHT COLUMN: Ranking + History + Export -->
+    <aside class="right-col">
+
+      <!-- Ranking / Podio (separado) -->
+      <div class="panel p-panel">
+        <h2 class="section-title"><span class="icon">🏆</span> Ranking</h2>
+        <div id="podium" class="podium"></div>
+        <div id="rankingList" class="ranking-list scroll" style="max-height: 22vh;"></div>
+      </div>
+
+      <!-- Score result panel (after spin) -->
+      <div class="panel p-panel" id="quickScorePanel" style="display:none;">
+        <h2 class="section-title"><span class="icon">⚡</span> Quick Result</h2>
+        <div id="quickScoreContent"></div>
+      </div>
+
+      <!-- History -->
+      <div class="panel p-panel">
+        <h2 class="section-title"><span class="icon">📜</span> History</h2>
+        <div id="history" class="scroll" style="max-height: 28vh;"></div>
+      </div>
+
+      <!-- Export -->
+      <div class="panel p-panel">
+        <h2 class="section-title"><span class="icon">📊</span> Export</h2>
+        <p class="text-muted text-sm">Download the full scoreboard results.</p>
+        <button id="exportBtn" class="btn btn-ghost btn-sm" style="margin-top:.5rem;">
+          📥 Download CSV
+        </button>
+      </div>
+    </aside>
+
+  </main>
+</div>
+
+<!-- ===== WINNER MODAL ===== -->
+<div id="modal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="winnerName">
+  <div class="modal-card">
+    <div class="modal-eyebrow">The wheel has chosen</div>
+    <div id="winnerName" class="modal-winner-name display"></div>
+
+    <!-- Confetti canvas -->
+    <canvas id="confettiCanvas"></canvas>
+
+    <!-- Score question -->
+    <div id="scoreQuestion" class="score-question visible">
+      <h3>Did they answer correctly?</h3>
+      <div class="score-answer-btns">
+        <button id="btnAnswered" class="btn btn-success" title="Answered">
+          ✅ Yes, answered
+        </button>
+        <button id="btnSkipped" class="btn btn-fail" title="Did not answer">
+          ❌ No answer
+        </button>
+      </div>
+    </div>
+
+    <!-- Points selector (visible after clicking "Yes, answered") -->
+    <div id="pointsSelector" class="points-selector">
+      <h3>How many points?</h3>
+      <div class="points-btns" style="display: flex; align-items: center; gap: 0.5rem;">
+        <input type="number" id="customPointsInput" class="field" style="width: 80px; text-align: center;" value="1" min="1">
+        <button id="assignPointsBtn" class="btn btn-primary">Assign</button>
+      </div>
+    </div>
+
+    <!-- Result badge -->
+    <div id="scoreResultBadge" class="score-result-badge"></div>
+
+    <!-- Close -->
+    <button id="closeModal" class="btn btn-ghost" style="margin-top: 1rem;">Continue ▸</button>
+  </div>
+</div>
+
+<!-- ===== EDIT PLAYER MODAL ===== -->
+<div id="editModal" class="modal-overlay" role="dialog" aria-modal="true">
+  <div class="modal-card modal-card-sm">
+    <h2 class="display" style="color: var(--purple-300); font-size: 1.4rem; margin-bottom: 1rem;">✏️ Edit Player</h2>
+    <label class="form-label" for="editNameInput">Name</label>
+    <input id="editNameInput" type="text" class="field" placeholder="New name">
+    <input id="editPlayerId" type="hidden">
+    <div style="display:flex; gap:.75rem; margin-top:1rem; justify-content:center;">
+      <button id="editSaveBtn" class="btn btn-primary">Save</button>
+      <button id="editCancelBtn" class="btn btn-ghost">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toasts -->
+<div id="toasts" aria-live="polite"></div>
+
+<script src="app.js"></script>
+</body>
+</html>
