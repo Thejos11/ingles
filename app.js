@@ -959,13 +959,13 @@ function render() {
    NEON SLOTS — Slot Machine Engine
    ===================================================================== */
 
-const SLOT_SYMBOLS = ['👑', '7️⃣', '💎', '🔥', '🍒', '🎰'];
+const SLOT_SYMBOLS = ['👑', '⭐', '7️⃣', '💎', '🔥', '🍒', '🎰'];
 const SLOT_SYMBOL_HEIGHT = 120; // matches CSS .slot-symbol height
 let slotBet = 1;
 let slotSpinning = false;
 
 /* Symbol weights (lower index = rarer) */
-const SLOT_WEIGHTS = [1, 2, 3, 4, 5, 4]; // 👑 is rarest
+const SLOT_WEIGHTS = [1, 1, 2, 3, 4, 5, 4]; // 👑 & ⭐ are rarest
 
 function weightedRandomSymbol() {
   const totalWeight = SLOT_WEIGHTS.reduce((a, b) => a + b, 0);
@@ -1001,8 +1001,10 @@ function spinSlots() {
   const sel = $('slotsPlayerSelect');
   if (!sel || !sel.value) return toast('Select a player first. Add players in Roulette.', true);
   
+  const playerId = sel.value;
+
   // Refresh state and check balance atomically
-  let player = syncPlayer(sel.value, p => p);
+  let player = syncPlayer(playerId, p => p);
   if (!player) return toast('Player not found.', true);
   if ((player.score || 0) < slotBet) return toast('Not enough chips to bet!', true);
 
@@ -1012,7 +1014,7 @@ function spinSlots() {
   $('slotResult').className = 'slot-result';
 
   // Deduct bet atomically
-  player = syncPlayer(sel.value, (p) => {
+  player = syncPlayer(playerId, (p) => {
     p.score = Math.max(0, (parseInt(p.score, 10) || 0) - (parseInt(slotBet, 10) || 0));
   });
   updateChipsDisplay('slotsPlayerSelect', 'slotsPlayerChips');
@@ -1067,8 +1069,16 @@ function spinSlots() {
 
   // When all reels stop, evaluate results
   Promise.all(reelPromises).then(() => {
-    const sel = $('slotsPlayerSelect');
-    evaluateSlotResult(sel.value, results);
+    try {
+      evaluateSlotResult(playerId, results);
+    } catch (err) {
+      console.error(err);
+      toast("Error evaluating result", true);
+    } finally {
+      slotSpinning = false;
+      $('slotSpinBtn').disabled = false;
+    }
+  }).catch(() => {
     slotSpinning = false;
     $('slotSpinBtn').disabled = false;
   });
@@ -1080,6 +1090,13 @@ function evaluateSlotResult(playerId, results) {
   let resultClass = 'lose';
   let message = '';
   let diamondJackpot = false;
+
+  // Validate player still exists before evaluation
+  const activePlayer = state.students.find(p => p.id === playerId);
+  if (!activePlayer) {
+    toast('Player not found — spin voided.', true);
+    return;
+  }
 
   // Check for 3 matching
   if (a === b && b === c) {
@@ -1093,22 +1110,22 @@ function evaluateSlotResult(playerId, results) {
   else if (a === b || b === c || a === c) {
     multiplier = 1.5;
     resultClass = 'win';
-    const winAmount = slotBet * multiplier;
+    const winAmount = Math.floor(slotBet * multiplier);
     message = `✨ Two match! × 1.5 = +${winAmount} chips`;
   }
   // No match
   else {
     multiplier = 0;
     resultClass = 'lose';
-    message = `😔 No match — Lost ${slotBet} chip${slotBet > 1 ? 's' : ''}`;
+    message = `😔 Inténtalo de nuevo — Perdiste ${slotBet} chip${slotBet > 1 ? 's' : ''}`;
   }
 
   // Apply winnings atomically
   const player = syncPlayer(playerId, (p, freshState) => {
     if (multiplier > 0) {
-      const winnings = slotBet * multiplier;
-      p.score = Math.max(0, (parseInt(p.score, 10) || 0) + (parseInt(winnings, 10) || 0));
-      
+      const winnings = Math.floor(slotBet * multiplier);
+      p.score = Math.max(0, (parseInt(p.score, 10) || 0) + winnings);
+
       if (diamondJackpot && !p.achievements.includes('slots_diamond')) {
         p.achievements.push('slots_diamond');
         showAchievementToast('Diamond Hands', 'Got 3 Diamonds in Slots!', '💎');
@@ -1136,9 +1153,10 @@ function evaluateSlotResult(playerId, results) {
     freshState.rounds = (freshState.rounds || 0) + 1;
   });
 
-    if (multiplier >= 7) playJackpot();
-    else if (multiplier > 0) playSlotWin();
-    else playSlotLose();
+  // Sound effects based on result
+  if (multiplier >= 7) playJackpot();
+  else if (multiplier > 0) playSlotWin();
+  else playSlotLose();
 
   // Update UI
   renderSlotsHistory();
@@ -1152,6 +1170,33 @@ function evaluateSlotResult(playerId, results) {
     $('playerCount').textContent = state.students.length;
     $('roundCount').textContent = state.rounds || 0;
   }
+}
+
+/* ---------- Slots Spin History ---------- */
+function renderSlotsHistory() {
+  const container = $('slotsHistory');
+  if (!container) return;
+
+  const slotsEntries = (state.history || []).filter(h => h.game === 'slots').slice(0, 20);
+
+  if (!slotsEntries.length) {
+    container.innerHTML = '<p class="empty-text">No spins yet. Try your luck!</p>';
+    return;
+  }
+
+  container.innerHTML = slotsEntries.map(h => {
+    const isWin = h.answered;
+    const icon = isWin ? '✅' : '❌';
+    const cls  = isWin ? 'positive' : 'zero';
+    const pts  = isWin ? `+${h.points}` : `${h.points}`;
+    return `
+      <div class="history-row">
+        <span class="history-icon">${icon} 🎰</span>
+        <span class="history-name">${esc(h.name)}</span>
+        <span class="history-pts ${cls}">${pts}</span>
+        <span class="history-meta">${h.date || ''}</span>
+      </div>`;
+  }).join('');
 }
 
 
