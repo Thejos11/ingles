@@ -3,135 +3,340 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Roulette Royale — Classroom</title>
-  <meta name="description" content="Interactive classroom roulette with points system and ranking.">
+  <title>Casino Royale Hub — Classroom Edition</title>
+  <meta name="description" content="Interactive Casino Hub with Roulette, Slots, and Blackjack — gamified classroom experience.">
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
 
-<div class="app">
-
-  <!-- ===== HEADER ===== -->
-  <header class="app-header">
-    <div class="header-left">
-      <h1 class="display">🎰 Roulette Royale</h1>
-      <p class="header-sub">Classroom Edition — Spin, answer, earn points.</p>
+<!-- ===== PERSISTENT TOPBAR ===== -->
+<header class="topbar" id="topbar">
+  <div class="topbar-left">
+    <button id="hubBtn" class="topbar-logo" title="Back to Hub">
+      <span class="topbar-logo-icon">🏰</span>
+      <span class="topbar-logo-text">Casino Royale</span>
+    </button>
+  </div>
+  <div class="topbar-center">
+    <span id="currentView" class="topbar-view">World Selector</span>
+  </div>
+  <div class="topbar-right">
+    <div class="topbar-wallet">
+      <span class="wallet-icon">🪙</span>
+      <span class="wallet-label">Players</span>
+      <span id="globalPlayerCount" class="wallet-value">0</span>
     </div>
-    <div class="header-right">
-      <div class="header-stat">
-        <span class="stat-label">Players</span>
-        <span id="playerCount" class="stat-value display">0</span>
-      </div>
-      <div class="header-stat">
-        <span class="stat-label">Rounds</span>
-        <span id="roundCount" class="stat-value display">0</span>
-      </div>
+    <div class="topbar-wallet">
+      <span class="wallet-icon">🏆</span>
+      <span class="wallet-label">Rounds</span>
+      <span id="globalRoundCount" class="wallet-value">0</span>
     </div>
-  </header>
+    <button id="storeBtn" class="topbar-btn" title="Rewards Store">🛒 Store</button>
+    <button id="adminBtn" class="topbar-btn" title="Admin Panel">⚙️ Admin</button>
+    <button id="fullscreenBtn" class="topbar-btn" title="Fullscreen">⛶</button>
+  </div>
+</header>
 
-  <!-- ===== MAIN GRID ===== -->
-  <main class="main-grid">
+<!-- ===== VIEWS CONTAINER ===== -->
+<div id="viewsContainer" class="views-container">
 
-    <!-- LEFT COLUMN: Player Management (agregar + lista) -->
-    <aside class="left-col">
+  <!-- ============================================
+       VIEW: HUB / WORLD SELECTOR
+       ============================================ -->
+  <section id="viewHub" class="view view-active">
+    <div class="hub-hero">
+      <h1 class="hub-title display">🏰 Casino Royale Hub</h1>
+      <p class="hub-subtitle">Choose your world and test your luck</p>
+    </div>
 
-      <!-- Add players -->
-      <div class="panel p-panel lockable" id="addPanel">
-        <h2 class="section-title"><span class="icon">➕</span> Add Players</h2>
-        <label class="form-label" for="namesInput">Names (comma or newline separated)</label>
-        <textarea id="namesInput" rows="3" class="field" placeholder="Ana, Luis, Marta&#10;Peter"></textarea>
-        <div class="add-row">
-          <button id="addBtn" class="btn btn-primary">
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 2v12M2 8h12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
-            Add
-          </button>
+    <!-- Particle canvas background for the hub -->
+    <canvas id="hubParticles" class="hub-particles"></canvas>
+
+    <div class="hub-grid">
+      <!-- World 1: Roulette -->
+      <button class="world-card" data-world="roulette" id="cardRoulette">
+        <div class="world-card-glow"></div>
+        <div class="world-card-inner">
+          <span class="world-icon">🎡</span>
+          <h2 class="world-name display">Roulette Royale</h2>
+          <p class="world-desc">Classroom Edition — Spin, answer, earn points</p>
+          <span class="world-enter">Enter World →</span>
         </div>
-      </div>
-
-      <!-- Player list (tabla de jugadores) -->
-      <div class="panel p-panel">
-        <h2 class="section-title"><span class="icon">👥</span> Players</h2>
-        <div id="roster" class="roster-list scroll" style="max-height: 42vh;"></div>
-        <div class="panel-actions">
-          <button id="resetBtn" class="btn btn-ghost btn-sm lockable">Reset Points</button>
-          <button id="clearBtn" class="btn btn-danger btn-sm lockable">Clear All</button>
-        </div>
-      </div>
-    </aside>
-
-    <!-- CENTER: Wheel -->
-    <section class="center-col wheel-center">
-      <div id="wheelWrap">
-        <svg id="pointer" viewBox="0 0 46 60" aria-hidden="true">
-          <path d="M23 58 L3 8 Q23 -4 43 8 Z" fill="#c084fc" stroke="#7c3aed" stroke-width="3"/>
-          <circle cx="23" cy="16" r="5" fill="#e9d5ff"/>
-        </svg>
-        <canvas id="wheel" width="1000" height="1000" aria-label="Classroom roulette"></canvas>
-      </div>
-      <p id="statusText" aria-live="polite"></p>
-      <button id="spinBtn" class="btn btn-primary btn-spin">
-        🎲 SPIN
       </button>
-    </section>
 
-    <!-- RIGHT COLUMN: Ranking + History + Export -->
-    <aside class="right-col">
+      <!-- World 2: Slots -->
+      <button class="world-card" data-world="slots" id="cardSlots">
+        <div class="world-card-glow"></div>
+        <div class="world-card-inner">
+          <span class="world-icon">🎰</span>
+          <h2 class="world-name display">Neon Slots</h2>
+          <p class="world-desc">3 reels — hit the jackpot with your chips</p>
+          <span class="world-enter">Enter World →</span>
+        </div>
+      </button>
 
-      <!-- Ranking / Podio (separado) -->
-      <div class="panel p-panel">
-        <h2 class="section-title"><span class="icon">🏆</span> Ranking</h2>
-        <div id="podium" class="podium"></div>
-        <div id="rankingList" class="ranking-list scroll" style="max-height: 22vh;"></div>
+      <!-- World 3: Blackjack -->
+      <button class="world-card" data-world="blackjack" id="cardBlackjack">
+        <div class="world-card-glow"></div>
+        <div class="world-card-inner">
+          <span class="world-icon">🃏</span>
+          <h2 class="world-name display">Cyber Blackjack</h2>
+          <p class="world-desc">Beat the dealer — get 21 and win big</p>
+          <span class="world-enter">Enter World →</span>
+        </div>
+      </button>
+    </div>
+
+    <!-- Leaderboard Top 10 Hub -->
+    <div class="hub-leaderboard">
+      <h2 class="display" style="text-align: center; color: var(--gold); margin-bottom: 1rem;">🏆 Top 10 Leaderboard</h2>
+      <div id="hubPodium" class="podium" style="margin-bottom: 1rem;"></div>
+      <div id="hubLeaderboardList" class="ranking-list"></div>
+    </div>
+  </section>
+
+  <!-- ============================================
+       VIEW: ROULETTE ROYALE
+       ============================================ -->
+  <section id="viewRoulette" class="view">
+    <div class="app">
+      <!-- HEADER -->
+      <div class="roulette-header">
+        <div class="header-left">
+          <h1 class="display">🎡 Roulette Royale</h1>
+          <p class="header-sub">Classroom Edition — Spin, answer, earn points.</p>
+        </div>
+        <div class="header-right">
+          <div class="header-stat">
+            <span class="stat-label">Players</span>
+            <span id="playerCount" class="stat-value display">0</span>
+          </div>
+          <div class="header-stat">
+            <span class="stat-label">Rounds</span>
+            <span id="roundCount" class="stat-value display">0</span>
+          </div>
+        </div>
       </div>
 
-      <!-- Score result panel (after spin) -->
-      <div class="panel p-panel" id="quickScorePanel" style="display:none;">
-        <h2 class="section-title"><span class="icon">⚡</span> Quick Result</h2>
-        <div id="quickScoreContent"></div>
+      <!-- MAIN GRID -->
+      <main class="main-grid">
+        <!-- LEFT COLUMN: Player Management -->
+        <aside class="left-col">
+          <div class="panel p-panel lockable" id="addPanel">
+            <h2 class="section-title"><span class="icon">➕</span> Add Players</h2>
+            <label class="form-label" for="namesInput">Names (comma or newline separated)</label>
+            <textarea id="namesInput" rows="3" class="field" placeholder="Ana, Luis, Marta&#10;Peter"></textarea>
+            <div class="add-row">
+              <button id="addBtn" class="btn btn-primary">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 2v12M2 8h12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+                Add
+              </button>
+            </div>
+          </div>
+
+          <div class="panel p-panel">
+            <h2 class="section-title"><span class="icon">👥</span> Players</h2>
+            <div id="roster" class="roster-list scroll" style="max-height: 42vh;"></div>
+            <div class="panel-actions">
+              <button id="resetBtn" class="btn btn-ghost btn-sm lockable">Reset Points</button>
+              <button id="clearBtn" class="btn btn-danger btn-sm lockable">Clear All</button>
+            </div>
+          </div>
+        </aside>
+
+        <!-- CENTER: Wheel -->
+        <section class="center-col wheel-center">
+          <div id="wheelWrap">
+            <svg id="pointer" viewBox="0 0 46 60" aria-hidden="true">
+              <path d="M23 58 L3 8 Q23 -4 43 8 Z" fill="#c084fc" stroke="#7c3aed" stroke-width="3"/>
+              <circle cx="23" cy="16" r="5" fill="#e9d5ff"/>
+            </svg>
+            <canvas id="wheel" width="1000" height="1000" aria-label="Classroom roulette"></canvas>
+          </div>
+          <p id="statusText" aria-live="polite"></p>
+          <button id="spinBtn" class="btn btn-primary btn-spin">🎲 SPIN</button>
+        </section>
+
+        <!-- RIGHT COLUMN: Ranking + History -->
+        <aside class="right-col">
+          <div class="panel p-panel">
+            <h2 class="section-title"><span class="icon">🏆</span> Ranking</h2>
+            <div id="podium" class="podium"></div>
+            <div id="rankingList" class="ranking-list scroll" style="max-height: 22vh;"></div>
+          </div>
+
+          <div class="panel p-panel" id="quickScorePanel" style="display:none;">
+            <h2 class="section-title"><span class="icon">⚡</span> Quick Result</h2>
+            <div id="quickScoreContent"></div>
+          </div>
+
+          <div class="panel p-panel">
+            <h2 class="section-title"><span class="icon">📜</span> History</h2>
+            <div id="history" class="scroll" style="max-height: 28vh;"></div>
+          </div>
+
+          <div class="panel p-panel">
+            <h2 class="section-title"><span class="icon">📊</span> Export</h2>
+            <p class="text-muted text-sm">Download the full scoreboard results.</p>
+            <button id="exportBtn" class="btn btn-ghost btn-sm" style="margin-top:.5rem;">📥 Download CSV</button>
+          </div>
+        </aside>
+      </main>
+    </div>
+  </section>
+
+  <!-- ============================================
+       VIEW: NEON SLOTS
+       ============================================ -->
+  <section id="viewSlots" class="view">
+    <div class="slots-container">
+      <h1 class="display slots-title">🎰 Neon Slots</h1>
+
+      <!-- Player selector for slots -->
+      <div class="game-player-selector">
+        <label class="form-label">Active Player</label>
+        <select id="slotsPlayerSelect" class="field game-select"></select>
+        <div class="game-player-info">
+          <span class="wallet-icon">🪙</span>
+          <span id="slotsPlayerChips" class="game-player-chips">0</span>
+          <span class="chips-label">chips</span>
+        </div>
       </div>
 
-      <!-- History -->
-      <div class="panel p-panel">
-        <h2 class="section-title"><span class="icon">📜</span> History</h2>
-        <div id="history" class="scroll" style="max-height: 28vh;"></div>
+      <!-- Slot Machine -->
+      <div class="slot-machine">
+        <div class="slot-frame">
+          <div class="slot-reel-container">
+            <div class="slot-reel" id="reel1">
+              <div class="slot-reel-inner" id="reelInner1"></div>
+            </div>
+            <div class="slot-reel" id="reel2">
+              <div class="slot-reel-inner" id="reelInner2"></div>
+            </div>
+            <div class="slot-reel" id="reel3">
+              <div class="slot-reel-inner" id="reelInner3"></div>
+            </div>
+          </div>
+          <div class="slot-line"></div>
+        </div>
+
+        <!-- Bet controls -->
+        <div class="slot-controls">
+          <div class="slot-bet-section">
+            <label class="form-label">Bet</label>
+            <div class="slot-bet-row">
+              <button id="slotBetDown" class="btn btn-ghost btn-sm">−</button>
+              <span id="slotBetAmount" class="slot-bet-display">1</span>
+              <button id="slotBetUp" class="btn btn-ghost btn-sm">+</button>
+            </div>
+          </div>
+          <button id="slotSpinBtn" class="btn btn-primary btn-spin-slot">🎰 PULL LEVER</button>
+        </div>
+
+        <div id="slotResult" class="slot-result"></div>
       </div>
 
-      <!-- Export -->
-      <div class="panel p-panel">
-        <h2 class="section-title"><span class="icon">📊</span> Export</h2>
-        <p class="text-muted text-sm">Download the full scoreboard results.</p>
-        <button id="exportBtn" class="btn btn-ghost btn-sm" style="margin-top:.5rem;">
-          📥 Download CSV
-        </button>
+      <!-- Slots paytable -->
+      <div class="panel p-panel slot-paytable">
+        <h2 class="section-title"><span class="icon">💎</span> Paytable</h2>
+        <div class="paytable-grid">
+          <div class="paytable-row jackpot"><span>💎💎💎</span><span>Jackpot × 10</span></div>
+          <div class="paytable-row"><span>⭐⭐⭐</span><span>× 7</span></div>
+          <div class="paytable-row"><span>Any 3 match</span><span>× 3</span></div>
+          <div class="paytable-row mini"><span>Any 2 match</span><span>× 1.5</span></div>
+        </div>
       </div>
-    </aside>
+      <div class="panel p-panel slot-history-panel" style="margin-top: 1rem; max-width: 600px; margin-left: auto; margin-right: auto;">
+        <h2 class="section-title"><span class="icon">📜</span> Spin History</h2>
+        <div id="slotsHistory" class="scroll" style="max-height: 20vh;"></div>
+      </div>
+    </div>
+  </section>
 
-  </main>
-</div>
+  <!-- ============================================
+       VIEW: CYBER BLACKJACK
+       ============================================ -->
+  <section id="viewBlackjack" class="view">
+    <div class="bj-container">
+      <h1 class="display bj-title">🃏 Cyber Blackjack</h1>
 
-<!-- ===== WINNER MODAL ===== -->
+      <!-- Player selector for blackjack -->
+      <div class="game-player-selector">
+        <label class="form-label">Active Player</label>
+        <select id="bjPlayerSelect" class="field game-select"></select>
+        <div class="game-player-info">
+          <span class="wallet-icon">🪙</span>
+          <span id="bjPlayerChips" class="game-player-chips">0</span>
+          <span class="chips-label">chips</span>
+        </div>
+      </div>
+
+      <!-- Blackjack table -->
+      <div class="bj-table">
+        <!-- Dealer area -->
+        <div class="bj-hand-area bj-dealer-area">
+          <div class="bj-hand-label">
+            <span>Dealer</span>
+            <span id="bjDealerScore" class="bj-score-badge"></span>
+          </div>
+          <div id="bjDealerCards" class="bj-cards"></div>
+        </div>
+
+        <!-- VS divider -->
+        <div class="bj-vs">VS</div>
+
+        <!-- Player area -->
+        <div class="bj-hand-area bj-player-area">
+          <div class="bj-hand-label">
+            <span id="bjPlayerName">Player</span>
+            <span id="bjPlayerScore" class="bj-score-badge"></span>
+          </div>
+          <div id="bjPlayerCards" class="bj-cards"></div>
+        </div>
+
+        <!-- Bet controls (pre-deal) -->
+        <div id="bjBetControls" class="bj-bet-controls">
+          <label class="form-label">Place Your Bet</label>
+          <div class="slot-bet-row">
+            <button id="bjBetDown" class="btn btn-ghost btn-sm">−</button>
+            <span id="bjBetAmount" class="slot-bet-display">1</span>
+            <button id="bjBetUp" class="btn btn-ghost btn-sm">+</button>
+          </div>
+          <button id="bjDealBtn" class="btn btn-primary bj-deal-btn">🃏 DEAL</button>
+        </div>
+
+        <!-- Action buttons (during game) -->
+        <div id="bjActions" class="bj-actions" style="display:none;">
+          <button id="bjHitBtn" class="btn btn-primary">🃏 Hit</button>
+          <button id="bjStandBtn" class="btn btn-ghost">🖐 Stand</button>
+        </div>
+
+        <!-- Result -->
+        <div id="bjResult" class="bj-result"></div>
+
+        <!-- New round button -->
+        <button id="bjNewRound" class="btn btn-ghost bj-new-round" style="display:none;">🔄 New Round</button>
+      </div>
+    </div>
+  </section>
+
+</div><!-- /viewsContainer -->
+
+<!-- ===== WINNER MODAL (Roulette) ===== -->
 <div id="modal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="winnerName">
   <div class="modal-card">
     <div class="modal-eyebrow">The wheel has chosen</div>
     <div id="winnerName" class="modal-winner-name display"></div>
-
-    <!-- Confetti canvas -->
     <canvas id="confettiCanvas"></canvas>
 
-    <!-- Score question -->
     <div id="scoreQuestion" class="score-question visible">
       <h3>Did they answer correctly?</h3>
       <div class="score-answer-btns">
-        <button id="btnAnswered" class="btn btn-success" title="Answered">
-          ✅ Yes, answered
-        </button>
-        <button id="btnSkipped" class="btn btn-fail" title="Did not answer">
-          ❌ No answer
-        </button>
+        <button id="btnAnswered" class="btn btn-success" title="Answered">✅ Yes, answered</button>
+        <button id="btnSkipped" class="btn btn-fail" title="Did not answer">❌ No answer</button>
       </div>
     </div>
 
-    <!-- Points selector (visible after clicking "Yes, answered") -->
     <div id="pointsSelector" class="points-selector">
       <h3>How many points?</h3>
       <div class="points-btns" style="display: flex; align-items: center; gap: 0.5rem;">
@@ -140,10 +345,7 @@
       </div>
     </div>
 
-    <!-- Result badge -->
     <div id="scoreResultBadge" class="score-result-badge"></div>
-
-    <!-- Close -->
     <button id="closeModal" class="btn btn-ghost" style="margin-top: 1rem;">Continue ▸</button>
   </div>
 </div>
@@ -161,6 +363,64 @@
     </div>
   </div>
 </div>
+
+<!-- ===== STORE MODAL ===== -->
+<div id="storeModal" class="modal-overlay" role="dialog" aria-modal="true">
+  <div class="modal-card modal-card-lg" style="max-width: 800px;">
+    <div class="modal-header" style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 1.5rem;">
+      <h2 class="display" style="color: var(--gold); font-size: 2rem; margin:0;">🛒 Rewards Store</h2>
+      <button id="closeStoreBtn" class="btn btn-ghost">✕</button>
+    </div>
+    
+    <div class="store-player-select" style="margin-bottom: 1.5rem; text-align: left;">
+      <label class="form-label">Select Player to Purchase</label>
+      <div style="display: flex; gap: 1rem; align-items: center;">
+        <select id="storePlayerSelect" class="field game-select"></select>
+        <div class="game-player-info">
+          <span class="wallet-icon">🪙</span>
+          <span id="storePlayerChips" class="game-player-chips">0</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="store-grid" id="storeGrid">
+      <!-- Generated via JS -->
+    </div>
+  </div>
+</div>
+
+<!-- ===== ADMIN MODAL ===== -->
+<div id="adminModal" class="modal-overlay" role="dialog" aria-modal="true">
+  <div class="modal-card" style="text-align: left; max-width: 600px;">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 1rem;">
+      <h2 class="display" style="color: var(--cyan); margin:0;">⚙️ Admin Panel</h2>
+      <button id="closeAdminBtn" class="btn btn-ghost">✕</button>
+    </div>
+    
+    <div class="admin-section" style="margin-bottom: 1.5rem;">
+      <h3 style="margin-bottom: 0.5rem;">Manage Points</h3>
+      <div style="display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap;">
+        <select id="adminPlayerSelect" class="field" style="flex:1; min-width:150px;"></select>
+        <input type="number" id="adminPointsInput" class="field" style="width: 80px;" value="10">
+        <button id="adminAddBtn" class="btn btn-success">+ Add</button>
+        <button id="adminSubBtn" class="btn btn-danger">- Sub</button>
+        <button id="adminResetPlayerBtn" class="btn btn-ghost" title="Reset points to 0">Reset to 0</button>
+      </div>
+    </div>
+
+    <div class="admin-section" style="margin-bottom: 1.5rem;">
+      <h3 style="margin-bottom: 0.5rem;">Import/Export Data</h3>
+      <div style="display: flex; gap: 0.5rem;">
+        <button id="adminExportBtn" class="btn btn-ghost">📥 Export JSON</button>
+        <input type="file" id="adminImportFile" style="display:none;" accept=".json,.csv">
+        <button id="adminImportBtn" class="btn btn-ghost" onclick="document.getElementById('adminImportFile').click()">📤 Import</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Achievements Toast Container -->
+<div id="achievementToasts" aria-live="polite" style="position: fixed; top: 1rem; right: 1rem; z-index: 400; display: flex; flex-direction: column; gap: 0.5rem;"></div>
 
 <!-- Toasts -->
 <div id="toasts" aria-live="polite"></div>
