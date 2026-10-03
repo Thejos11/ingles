@@ -4,10 +4,14 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Casino Royale Hub — Classroom Edition</title>
-  <meta name="description" content="Interactive Casino Hub with Roulette, Slots, and Blackjack — gamified classroom experience.">
-  <link rel="stylesheet" href="styles.css">
+  <meta name="description" content="Interactive Casino Hub with Wheel of Fortune, Slots, and Blackjack — gamified classroom experience.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lilita+One&family=Nunito:wght@600;700;800&display=swap">
+  <link rel="stylesheet" href="css/styles.css">
+  <link rel="stylesheet" href="css/theme.css">
 </head>
-<body>
+<body data-view="hub">
 
 <!-- ===== PERSISTENT TOPBAR ===== -->
 <header class="topbar" id="topbar">
@@ -17,20 +21,18 @@
       <span class="topbar-logo-text">Casino Royale</span>
     </button>
   </div>
-  <div class="topbar-center">
-    <span id="currentView" class="topbar-view">World Selector</span>
-  </div>
+  <nav class="topbar-tabs" aria-label="Sections">
+    <button class="nav-tab active" data-view="hub">Hub</button>
+    <button class="nav-tab" data-view="wheel">Wheel</button>
+    <button class="nav-tab" data-view="roulette">Roulette</button>
+    <button class="nav-tab" data-view="slots">Slots</button>
+    <button class="nav-tab" data-view="blackjack">Blackjack</button>
+    <button class="nav-tab" data-view="players">Players</button>
+  </nav>
+  <span id="currentView" hidden></span>
   <div class="topbar-right">
-    <div class="topbar-wallet">
-      <span class="wallet-icon">🪙</span>
-      <span class="wallet-label">Players</span>
-      <span id="globalPlayerCount" class="wallet-value">0</span>
-    </div>
-    <div class="topbar-wallet">
-      <span class="wallet-icon">🏆</span>
-      <span class="wallet-label">Rounds</span>
-      <span id="globalRoundCount" class="wallet-value">0</span>
-    </div>
+    <div class="topbar-wallet"><span class="wallet-icon">🪙</span><span class="wallet-label">Players</span><span id="globalPlayerCount" class="wallet-value">0</span></div>
+    <div class="topbar-wallet"><span class="wallet-icon">🏆</span><span class="wallet-label">Rounds</span><span id="globalRoundCount" class="wallet-value">0</span></div>
     <button id="storeBtn" class="topbar-btn" title="Rewards Store">🛒 Store</button>
     <button id="adminBtn" class="topbar-btn" title="Admin Panel">⚙️ Admin</button>
     <button id="fullscreenBtn" class="topbar-btn" title="Fullscreen">⛶</button>
@@ -44,148 +46,165 @@
        VIEW: HUB / WORLD SELECTOR
        ============================================ -->
   <section id="viewHub" class="view view-active">
-    <div class="hub-hero">
-      <h1 class="hub-title display">🏰 Casino Royale Hub</h1>
-      <p class="hub-subtitle">Choose your world and test your luck</p>
-    </div>
-
-    <!-- Particle canvas background for the hub -->
     <canvas id="hubParticles" class="hub-particles"></canvas>
-
-    <div class="hub-grid">
-      <!-- World 1: Roulette -->
-      <button class="world-card" data-world="roulette" id="cardRoulette">
-        <div class="world-card-glow"></div>
-        <div class="world-card-inner">
-          <span class="world-icon">🎡</span>
-          <h2 class="world-name display">Roulette Royale</h2>
-          <p class="world-desc">Classroom Edition — Spin, answer, earn points</p>
-          <span class="world-enter">Enter World →</span>
+    <div class="hub-layout">
+      <div class="hub-map">
+        <h1 class="hm-title">Choose your world</h1>
+        <p class="hm-sub">4 worlds · classroom edition</p>
+        <div class="node-graph">
+          <svg class="node-lines" viewBox="0 0 640 400" aria-hidden="true">
+            <defs><marker id="ah" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M0 0L10 5L0 10z" fill="context-stroke"/></marker></defs>
+            <path class="graph-line" data-to="wheel" d="M118 172 L186 118" marker-end="url(#ah)"/>
+            <path class="graph-line" data-to="slots" d="M292 100 L346 100" marker-end="url(#ah)"/>
+            <path class="graph-line" data-to="ranking" d="M452 118 L508 172" marker-end="url(#ah)"/>
+            <path class="graph-line" data-to="blackjack" d="M118 228 L186 282" marker-end="url(#ah)"/>
+            <path class="graph-line" data-to="roulette" d="M292 300 L346 300" marker-end="url(#ah)"/>
+            <path class="graph-line" data-to="ranking" d="M452 282 L508 228" marker-end="url(#ah)"/>
+          </svg>
+          <div class="hub-node hub-start" style="left:12.5%;top:50%" aria-hidden="true"><span>START</span></div>
+          <button class="hub-node" data-node="wheel" style="left:37.5%;top:25%" aria-label="Wheel of Fortune"><span class="node-icon">🎯</span><span class="node-label">Wheel</span></button>
+          <button class="hub-node" data-node="slots" style="left:62.5%;top:25%" aria-label="Neon Slots"><span class="node-icon">🎰</span><span class="node-label">Slots</span></button>
+          <button class="hub-node" data-node="blackjack" style="left:37.5%;top:75%" aria-label="Cyber Blackjack"><span class="node-icon">🃏</span><span class="node-label">Blackjack</span></button>
+          <button class="hub-node" data-node="roulette" style="left:62.5%;top:75%" aria-label="Roulette"><span class="node-icon">🎡</span><span class="node-label">Roulette</span></button>
+          <button class="hub-node" data-node="ranking" style="left:87.5%;top:50%" aria-label="Top 10"><span class="node-icon">🏆</span><span class="node-label">Top 10</span></button>
         </div>
-      </button>
-
-      <!-- World 2: Slots -->
-      <button class="world-card" data-world="slots" id="cardSlots">
-        <div class="world-card-glow"></div>
-        <div class="world-card-inner">
-          <span class="world-icon">🎰</span>
-          <h2 class="world-name display">Neon Slots</h2>
-          <p class="world-desc">3 reels — hit the jackpot with your chips</p>
-          <span class="world-enter">Enter World →</span>
+      </div>
+      <aside class="hub-detail" id="hubDetail" aria-live="polite">
+        <div class="detail-card">
+          <h2 class="detail-title display" id="hdTitle"></h2>
+          <img id="hdImg" class="detail-img" alt="" loading="lazy" referrerpolicy="no-referrer">
+          <div id="hdGame">
+            <p class="detail-keys" id="hdKey"></p>
+            <p class="detail-desc" id="hdDesc"></p>
+            <div class="detail-req"><span class="req-label">Requires</span><span class="req-value" id="hdReq"></span></div>
+            <button id="hdEnter" class="btn btn-primary">▶ Enter world</button>
+            <p class="detail-credit">Photo by <a id="hdCredit" href="https://unsplash.com" target="_blank" rel="noopener noreferrer">Unsplash</a> on Unsplash</p>
+          </div>
+          <div id="hdRank" hidden>
+            <div id="hubPodium" class="podium" style="margin:1rem 0"></div>
+            <div id="hubLeaderboardList" class="ranking-list"></div>
+          </div>
         </div>
-      </button>
-
-      <!-- World 3: Blackjack -->
-      <button class="world-card" data-world="blackjack" id="cardBlackjack">
-        <div class="world-card-glow"></div>
-        <div class="world-card-inner">
-          <span class="world-icon">🃏</span>
-          <h2 class="world-name display">Cyber Blackjack</h2>
-          <p class="world-desc">Beat the dealer — get 21 and win big</p>
-          <span class="world-enter">Enter World →</span>
-        </div>
-      </button>
-    </div>
-
-    <!-- Leaderboard Top 10 Hub -->
-    <div class="hub-leaderboard">
-      <h2 class="display" style="text-align: center; color: var(--gold); margin-bottom: 1rem;">🏆 Top 10 Leaderboard</h2>
-      <div id="hubPodium" class="podium" style="margin-bottom: 1rem;"></div>
-      <div id="hubLeaderboardList" class="ranking-list"></div>
+      </aside>
     </div>
   </section>
 
   <!-- ============================================
-       VIEW: ROULETTE ROYALE
+       VIEW: WHEEL OF FORTUNE
        ============================================ -->
-  <section id="viewRoulette" class="view">
-    <div class="app">
-      <!-- HEADER -->
-      <div class="roulette-header">
-        <div class="header-left">
-          <h1 class="display">🎡 Roulette Royale</h1>
-          <p class="header-sub">Classroom Edition — Spin, answer, earn points.</p>
-        </div>
-        <div class="header-right">
-          <div class="header-stat">
-            <span class="stat-label">Players</span>
-            <span id="playerCount" class="stat-value display">0</span>
-          </div>
-          <div class="header-stat">
-            <span class="stat-label">Rounds</span>
-            <span id="roundCount" class="stat-value display">0</span>
-          </div>
+  <section id="viewWheel" class="view">
+    <div class="rl-container">
+      <div class="rl-head">
+        <h1 class="display rl-title">🎯 Wheel of Fortune</h1>
+        <div class="rl-stats">
+          <div class="header-stat"><span class="stat-label">Players</span><span id="playerCount" class="stat-value display">0</span></div>
+          <div class="header-stat"><span class="stat-label">Rounds</span><span id="roundCount" class="stat-value display">0</span></div>
         </div>
       </div>
-
-      <!-- MAIN GRID -->
-      <main class="main-grid">
-        <!-- LEFT COLUMN: Player Management -->
-        <aside class="left-col">
-          <div class="panel p-panel lockable" id="addPanel">
-            <h2 class="section-title"><span class="icon">➕</span> Add Players</h2>
-            <label class="form-label" for="namesInput">Names (comma or newline separated)</label>
-            <textarea id="namesInput" rows="3" class="field" placeholder="Ana, Luis, Marta&#10;Peter"></textarea>
-            <div class="add-row">
-              <button id="addBtn" class="btn btn-primary">
-                <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 2v12M2 8h12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
-                Add
-              </button>
-            </div>
-          </div>
-
-          <div class="panel p-panel">
+      <div class="rl-grid">
+        <aside class="rl-side">
+          <div class="panel p-panel rl-fill">
             <h2 class="section-title"><span class="icon">👥</span> Players</h2>
-            <div id="roster" class="roster-list scroll" style="max-height: 42vh;"></div>
-            <div class="panel-actions">
-              <button id="resetBtn" class="btn btn-ghost btn-sm lockable">Reset Points</button>
-              <button id="clearBtn" class="btn btn-danger btn-sm lockable">Clear All</button>
-            </div>
+            <div id="roster" class="roster-list scroll"></div>
           </div>
         </aside>
-
-        <!-- CENTER: Wheel -->
-        <section class="center-col wheel-center">
+        <section class="rl-center">
           <div id="wheelWrap">
             <svg id="pointer" viewBox="0 0 46 60" aria-hidden="true">
               <path d="M23 58 L3 8 Q23 -4 43 8 Z" fill="#c084fc" stroke="#7c3aed" stroke-width="3"/>
               <circle cx="23" cy="16" r="5" fill="#e9d5ff"/>
             </svg>
-            <canvas id="wheel" width="1000" height="1000" aria-label="Classroom roulette"></canvas>
+            <svg id="wheel" viewBox="0 0 1000 1000" role="img" aria-label="Classroom wheel of fortune"></svg>
           </div>
           <p id="statusText" aria-live="polite"></p>
-          <button id="spinBtn" class="btn btn-primary btn-spin">🎲 SPIN</button>
+          <button id="spinBtn" class="btn btn-primary btn-spin">🎲 SPIN <kbd>Space</kbd></button>
         </section>
-
-        <!-- RIGHT COLUMN: Ranking + History -->
-        <aside class="right-col">
+        <aside class="rl-side">
           <div class="panel p-panel">
             <h2 class="section-title"><span class="icon">🏆</span> Ranking</h2>
             <div id="podium" class="podium"></div>
-            <div id="rankingList" class="ranking-list scroll" style="max-height: 22vh;"></div>
+            <div id="rankingList" class="ranking-list scroll" style="max-height:22dvh;"></div>
           </div>
-
-          <div class="panel p-panel" id="quickScorePanel" style="display:none;">
-            <h2 class="section-title"><span class="icon">⚡</span> Quick Result</h2>
-            <div id="quickScoreContent"></div>
-          </div>
-
-          <div class="panel p-panel">
+          <div class="panel p-panel rl-fill">
             <h2 class="section-title"><span class="icon">📜</span> History</h2>
-            <div id="history" class="scroll" style="max-height: 28vh;"></div>
-          </div>
-
-          <div class="panel p-panel">
-            <h2 class="section-title"><span class="icon">📊</span> Export</h2>
-            <p class="text-muted text-sm">Download the full scoreboard results.</p>
-            <button id="exportBtn" class="btn btn-ghost btn-sm" style="margin-top:.5rem;">📥 Download CSV</button>
+            <div id="history" class="scroll"></div>
           </div>
         </aside>
-      </main>
+      </div>
     </div>
   </section>
 
   <!-- ============================================
+       VIEW: PLAYERS
+       ============================================ -->
+  <section id="viewPlayers" class="view">
+    <div class="players-container">
+      <h1 class="display players-title">👥 Players</h1>
+      <div class="players-grid">
+        <div class="panel p-panel lockable" id="addPanel">
+          <h2 class="section-title"><span class="icon">➕</span> Add Players</h2>
+          <label class="form-label" for="namesInput">Names (comma or newline separated)</label>
+          <textarea id="namesInput" rows="6" class="field" placeholder="Ana, Luis, Marta&#10;Peter"></textarea>
+          <div class="add-row">
+            <button id="addBtn" class="btn btn-primary">＋ Add <kbd>Ctrl+Enter</kbd></button>
+          </div>
+          <div class="panel-actions">
+            <button id="resetBtn" class="btn btn-ghost btn-sm lockable">Reset Points</button>
+            <button id="clearBtn" class="btn btn-danger btn-sm lockable">Clear All</button>
+            <button id="exportBtn" class="btn btn-ghost btn-sm">📥 Download CSV</button>
+          </div>
+        </div>
+        <div class="panel p-panel">
+          <h2 class="section-title"><span class="icon">👥</span> Roster</h2>
+          <div id="playersRoster" class="roster-list scroll"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================
+       VIEW: ROULETTE (mesa europea)
+       ============================================ -->
+  <section id="viewRoulette" class="view">
+    <div class="rt-container">
+      <div class="rt-head">
+        <h1 class="display rt-title">🎡 Roulette</h1>
+        <div class="game-player-selector rt-player">
+          <label class="form-label" for="rlPlayerSelect">Active Player</label>
+          <select id="rlPlayerSelect" class="field game-select"></select>
+          <div class="game-player-info"><span class="wallet-icon">🪙</span><span id="rlPlayerChips" class="game-player-chips">0</span><span class="chips-label">chips</span></div>
+          <span id="rlAvail" class="rt-avail"></span>
+        </div>
+        <div id="rlLast" class="rt-last" aria-label="Last numbers"></div>
+      </div>
+      <div class="rt-grid">
+        <section class="panel p-panel rt-wheelbox" id="rlWheelBox">
+          <svg id="rlWheel" viewBox="0 0 500 500" role="img" aria-label="European roulette wheel"></svg>
+          <div id="rlResult" class="rt-result"></div>
+        </section>
+        <section class="panel p-panel rt-table">
+          <div id="rlBoard" class="rt-board"></div>
+          <div class="rt-toolbar">
+            <div id="rlChips" class="rt-chips"></div>
+            <div class="rt-actions">
+              <button id="rlUndo" class="btn btn-ghost btn-sm">↶ Undo</button>
+              <button id="rlClear" class="btn btn-ghost btn-sm">Clear</button>
+              <button id="rlRepeat" class="btn btn-ghost btn-sm">↻ Repeat</button>
+              <button id="rlSpin" class="btn btn-primary btn-spin">🎡 SPIN <kbd>Space</kbd></button>
+            </div>
+          </div>
+          <p class="text-muted text-sm">Pays: number 35:1 · dozen/column 2:1 · color, even/odd, 1-18/19-36 1:1 · color + even/odd 3:1. Zero loses all outside bets.</p>
+        </section>
+        <aside class="panel p-panel rt-bets">
+          <h2 class="section-title"><span class="icon">🪙</span> Bets</h2>
+          <div id="rlBets" class="scroll"></div>
+          <p id="rlSummary" class="text-muted text-sm"></p>
+        </aside>
+      </div>
+    </div>
+  </section>
+
+    <!-- ============================================
        VIEW: NEON SLOTS
        ============================================ -->
   <section id="viewSlots" class="view">
@@ -230,10 +249,12 @@
               <button id="slotBetUp" class="btn btn-ghost btn-sm">+</button>
             </div>
           </div>
-          <button id="slotSpinBtn" class="btn btn-primary btn-spin-slot">🎰 PULL LEVER</button>
+          <button id="slotSpinBtn" class="btn btn-primary btn-spin-slot">🎰 PULL LEVER <kbd>Space</kbd></button>
         </div>
 
         <div id="slotResult" class="slot-result"></div>
+        <div class="slot-tray" aria-hidden="true"><span></span><span></span><span></span></div>
+        <div class="slot-lever" aria-hidden="true"><i></i></div>
       </div>
 
       <!-- Slots paytable -->
@@ -302,13 +323,13 @@
             <span id="bjBetAmount" class="slot-bet-display">1</span>
             <button id="bjBetUp" class="btn btn-ghost btn-sm">+</button>
           </div>
-          <button id="bjDealBtn" class="btn btn-primary bj-deal-btn">🃏 DEAL</button>
+          <button id="bjDealBtn" class="btn btn-primary bj-deal-btn">🃏 DEAL <kbd>Enter</kbd></button>
         </div>
 
         <!-- Action buttons (during game) -->
         <div id="bjActions" class="bj-actions" style="display:none;">
-          <button id="bjHitBtn" class="btn btn-primary">🃏 Hit</button>
-          <button id="bjStandBtn" class="btn btn-ghost">🖐 Stand</button>
+          <button id="bjHitBtn" class="btn btn-primary">🃏 Hit <kbd>H</kbd></button>
+          <button id="bjStandBtn" class="btn btn-ghost">🖐 Stand <kbd>S</kbd></button>
         </div>
 
         <!-- Result -->
@@ -322,7 +343,7 @@
 
 </div><!-- /viewsContainer -->
 
-<!-- ===== WINNER MODAL (Roulette) ===== -->
+<!-- ===== WINNER MODAL (Wheel of Fortune) ===== -->
 <div id="modal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="winnerName">
   <div class="modal-card">
     <div class="modal-eyebrow">The wheel has chosen</div>
@@ -409,11 +430,14 @@
     </div>
 
     <div class="admin-section" style="margin-bottom: 1.5rem;">
+      <h3 style="margin-bottom: 0.5rem;">Prize Inventory</h3>
+      <div id="adminInventory" class="scroll" style="max-height: 20vh; margin-bottom: 1.5rem;"></div>
+
       <h3 style="margin-bottom: 0.5rem;">Import/Export Data</h3>
       <div style="display: flex; gap: 0.5rem;">
         <button id="adminExportBtn" class="btn btn-ghost">📥 Export JSON</button>
-        <input type="file" id="adminImportFile" style="display:none;" accept=".json,.csv">
-        <button id="adminImportBtn" class="btn btn-ghost" onclick="document.getElementById('adminImportFile').click()">📤 Import</button>
+        <input type="file" id="adminImportFile" style="display:none;" accept=".json">
+        <button id="adminImportBtn" class="btn btn-ghost" >📤 Import</button>
       </div>
     </div>
   </div>
@@ -425,6 +449,20 @@
 <!-- Toasts -->
 <div id="toasts" aria-live="polite"></div>
 
-<script src="app.js"></script>
+<footer class="bottombar" id="bottombar">
+  <div class="bar-center"><span id="barValue" class="bar-value">0</span><span id="barLabel" class="bar-label">Players</span></div>
+  <div class="bar-hints">
+    <span class="hint" data-v="hub"><kbd>Tab</kbd> Navigate</span>
+    <span class="hint" data-v="hub"><kbd>Enter</kbd> Open</span>
+    <span class="hint" data-v="wheel roulette"><kbd>Space</kbd> Spin</span>
+    <span class="hint" data-v="slots"><kbd>Space</kbd> Pull lever</span>
+    <span class="hint" data-v="blackjack"><kbd>Enter</kbd> Deal</span>
+    <span class="hint" data-v="blackjack"><kbd>H</kbd> Hit</span>
+    <span class="hint" data-v="blackjack"><kbd>S</kbd> Stand</span>
+    <span class="hint" data-v="hub wheel roulette slots blackjack"><kbd>Esc</kbd> Close</span>
+  </div>
+</footer>
+
+<script type="module" src="js/main.js"></script>
 </body>
 </html>
