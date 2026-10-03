@@ -1,0 +1,354 @@
+/* css/theme.css — Rediseño: bloques planos, contornos gruesos, sombras duras (carga después de styles.css) */
+:root{
+  --ink:#0a0718; --cream:#fff4e0; --pink:#ff3d8b; --cyan:#2de0d0;
+  --bg-deep:#1a1530; --bg-mid:#221b3d; --bg-card:#2a2147; --bg-input:#1a1530;
+  --purple-900:#1b1631; --purple-800:#241d40; --purple-700:#3a2f63; --purple-600:#4a3d7a;
+  --purple-500:#ff3d8b; --purple-400:#ff6fa8; --purple-300:#ffc2d9; --purple-200:#ffe3ec; --purple-100:#fff4e0;
+  --purple-glow:rgba(0,0,0,0); --gold:#fff4e0; --gold-glow:rgba(0,0,0,0); --cyan-glow:rgba(0,0,0,0);
+  --text:#fff4e0; --text-muted:#b9aedb; --text-dim:#8277b0;
+  --border:#0a0718; --border-strong:#0a0718;
+  --radius-sm:6px; --radius-md:10px; --radius-lg:14px; --radius-xl:18px;
+  --shadow-card:6px 6px 0 var(--ink); --shadow-glow:none;
+}
+body{font-family:'Nunito',system-ui,sans-serif;font-weight:700;padding-bottom:88px;
+  background:linear-gradient(135deg,#251d45 0 52%,#1d1737 52% 100%) fixed}
+.display,h1,h2,h3,.btn,.nav-tab,.topbar-btn,.world-name{font-family:'Lilita One','Nunito',sans-serif;font-weight:400;letter-spacing:.04em;text-transform:uppercase;text-shadow:none}
+.world-card-glow{display:none}.hub-particles{opacity:.25}
+
+/* Superficies planas con contorno grueso */
+.panel,.p-panel,.modal-card,.world-card-inner,.store-item,.slot-machine,.bj-table,.podium-item,.player-row{
+  background:var(--bg-card);border:3px solid var(--ink);border-radius:var(--radius-lg);box-shadow:var(--shadow-card)}
+.player-row{box-shadow:3px 3px 0 var(--ink)}
+.field{background:var(--bg-input);color:var(--text);border:3px solid var(--ink);border-radius:var(--radius-sm);font-family:inherit;font-weight:700}
+.field:focus-visible,button:focus-visible{outline:3px solid var(--cream);outline-offset:2px}
+
+/* Botones */
+.btn,.topbar-btn{border:3px solid var(--ink);border-radius:var(--radius-sm);box-shadow:4px 4px 0 var(--ink);background:var(--purple-700);color:var(--cream);cursor:pointer;transition:transform .08s,box-shadow .08s}
+.btn-primary{background:var(--pink);color:var(--cream)}
+.btn-ghost,.topbar-btn{background:var(--purple-700)}
+.btn:hover:not(:disabled),.topbar-btn:hover{transform:translate(-1px,-1px);box-shadow:5px 5px 0 var(--ink);filter:none}
+.btn:active:not(:disabled),.topbar-btn:active{transform:translate(3px,3px);box-shadow:1px 1px 0 var(--ink)}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+
+/* Barra superior */
+.topbar{display:flex;align-items:center;justify-content:space-between;gap:1rem;padding:.6rem 1.5rem 1rem;background:#120e26;
+  border-bottom:4px solid var(--ink);clip-path:polygon(0 0,100% 0,100% 82%,98% 100%,2% 100%,0 82%)}
+.topbar-logo{display:flex;align-items:center;gap:.6rem;background:none;border:0;color:var(--cream);cursor:pointer}
+.topbar-logo-icon{display:grid;place-items:center;width:2.6rem;height:2.6rem;background:var(--cyan);border:3px solid var(--ink);border-radius:8px;transform:rotate(-6deg)}
+.topbar-logo-text{font-family:'Lilita One',sans-serif;font-size:1.3rem;text-transform:uppercase}
+.topbar-tabs{display:flex;gap:.4rem;align-items:flex-end}
+.nav-tab{background:transparent;border:0;color:var(--text-muted);padding:.65rem 1.5rem;font-size:1.15rem;cursor:pointer;border-radius:8px}
+.nav-tab:hover{color:var(--cream)}
+.nav-tab.active{background:var(--cream);color:var(--bg-deep);transform:rotate(-1.5deg) translateY(2px);box-shadow:4px 4px 0 var(--ink)}
+.topbar-right{display:flex;align-items:center;gap:.6rem;flex-wrap:wrap}
+.topbar-wallet{display:flex;align-items:center;gap:.4rem;padding:.35rem .8rem;background:var(--bg-card);border:3px solid var(--ink);border-radius:8px;box-shadow:3px 3px 0 var(--ink)}
+.wallet-value{color:var(--cyan);font-family:'Lilita One',sans-serif;font-size:1.1rem}
+.topbar-btn{padding:.45rem .9rem;font-size:1rem}
+
+/* Barra inferior: contador + ayudas de teclado */
+.bottombar{position:fixed;left:0;right:0;bottom:0;z-index:90;display:flex;align-items:center;justify-content:space-between;gap:1rem;
+  padding:1.1rem 2rem .6rem;background:#120e26;border-top:4px solid var(--ink);clip-path:polygon(0 18%,2% 0,98% 0,100% 18%,100% 100%,0 100%)}
+.bar-center{position:absolute;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;line-height:1}
+.bar-value{font-family:'Lilita One',sans-serif;font-size:2.4rem;color:var(--cream)}
+.bar-label{font-family:'Lilita One',sans-serif;font-size:.8rem;letter-spacing:.08em;text-transform:uppercase;color:var(--text-muted)}
+.bar-hints{margin-left:auto;display:flex;gap:1.4rem}
+.hint{display:none;align-items:center;gap:.45rem;font-family:'Lilita One',sans-serif;text-transform:uppercase;letter-spacing:.05em}
+body[data-view="hub"] .hint[data-v~="hub"],body[data-view="wheel"] .hint[data-v~="wheel"],body[data-view="roulette"] .hint[data-v~="roulette"],
+body[data-view="slots"] .hint[data-v~="slots"],body[data-view="blackjack"] .hint[data-v~="blackjack"]{display:inline-flex}
+kbd{display:inline-grid;place-items:center;min-width:2rem;padding:.15rem .5rem;background:var(--cream);color:var(--bg-deep);border:3px solid var(--ink);border-radius:6px;box-shadow:2px 2px 0 var(--ink);font:inherit;font-size:.85rem}
+
+@media (max-width:900px){
+  .topbar{flex-wrap:wrap;clip-path:none}.topbar-tabs{order:3;width:100%;overflow-x:auto}
+  .bottombar{padding:.8rem 1rem .5rem}.bar-hints{display:none}.bar-center{position:static;transform:none;margin:0 auto}
+}
+@media (prefers-reduced-motion:reduce){.nav-tab.active{transform:none}.btn,.topbar-btn{transition:none}}
+
+/* ===== HUB: mapa de nodos + panel de detalle ===== */
+[hidden]{display:none!important}
+.hub-layout{position:relative;display:grid;grid-template-columns:58fr 42fr;min-height:calc(100vh - 190px)}
+.hub-map{padding:2.5rem 3rem}
+.hm-title{font-family:'Lilita One',sans-serif;font-size:3rem;text-transform:uppercase;color:var(--cream);margin:0}
+.hm-sub{color:var(--text-muted);font-family:'Lilita One',sans-serif;letter-spacing:.08em;text-transform:uppercase;font-size:.85rem}
+.node-graph{position:relative;width:min(100%,640px);aspect-ratio:640/400;margin:1.5rem 0}
+.node-lines{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+.graph-line{fill:none;stroke:#4a3d7a;stroke-width:5;stroke-linecap:round}
+.graph-line.lit{stroke:var(--pink)}
+.hub-node{position:absolute;width:15.6%;aspect-ratio:1;transform:translate(-50%,-50%);display:grid;place-items:center;
+  background:var(--purple-700);border:4px solid var(--ink);border-radius:14px;box-shadow:5px 5px 0 var(--ink);
+  font-size:clamp(1.6rem,3.2vw,2.8rem);cursor:pointer;color:var(--cream);transition:transform .1s}
+.hub-node:hover{transform:translate(-50%,-50%) scale(1.05)}
+.hub-node.selected{border-color:var(--cream);background:linear-gradient(var(--purple-700) 50%,var(--pink) 50%);transform:translate(-50%,-50%) scale(1.08)}
+.node-label{position:absolute;top:108%;left:50%;transform:translateX(-50%);white-space:nowrap;font-family:'Lilita One',sans-serif;
+  font-size:.8rem;letter-spacing:.06em;text-transform:uppercase;color:var(--text-muted)}
+.hub-node.selected .node-label{color:var(--cream)}
+.hub-start{width:11%;background:var(--pink);transform:translate(-50%,-50%) rotate(45deg);border-radius:12px;cursor:default}
+.hub-start:hover{transform:translate(-50%,-50%) rotate(45deg)}
+.hub-start span{transform:rotate(-45deg);font-family:'Lilita One',sans-serif;font-size:.85rem}
+.hub-detail{background:var(--pink);clip-path:polygon(6% 0,100% 0,100% 100%,0 100%,0 8%);padding:3rem 2.2rem 3rem 3.5rem;display:grid;place-items:center}
+.detail-card{position:relative;background:#120e26;border:4px solid var(--ink);box-shadow:8px 8px 0 var(--ink);
+  padding:2.6rem 1.6rem 1.6rem;width:min(100%,430px);transform:rotate(-1.5deg)}
+.detail-title{position:absolute;top:-1.4rem;left:-1.2rem;margin:0;background:var(--cream);color:var(--ink);border:4px solid var(--ink);
+  padding:.15rem 1rem;font-size:1.8rem;transform:rotate(-3deg)}
+.detail-img{display:block;width:100%;aspect-ratio:16/9;object-fit:cover;border:3px solid var(--ink);background:var(--purple-700)}
+.detail-keys{margin:1rem 0 .6rem}.detail-desc{color:var(--text-muted);line-height:1.5;font-size:.95rem}
+.detail-req{display:flex;gap:.8rem;align-items:center;margin:1rem 0}
+.req-label{font-family:'Lilita One',sans-serif;font-size:.8rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.08em}
+.req-value{font-family:'Lilita One',sans-serif;font-size:1.3rem;color:var(--cyan)}
+.detail-credit{font-size:.7rem;color:var(--text-dim);margin-top:.9rem}.detail-credit a{color:var(--cyan)}
+@media (max-width:900px){.hub-layout{grid-template-columns:1fr}.hub-detail{clip-path:none;padding:2.5rem 1rem}.hub-map{padding:1.5rem 1rem}.hm-title{font-size:2.2rem}}
+
+/* ===== MINIJUEGOS: Wheel · Slots · Blackjack =====
+   Mismo lenguaje que el hub: bloques planos, contorno grueso, sombra dura.
+   Las inclinaciones usan `rotate`/`translate` (propiedades individuales) para no chocar con las animaciones de `transform`. */
+
+/* --- Animaciones compartidas --- */
+@keyframes stickerPop{0%{transform:scale(.4) rotate(-8deg);opacity:0}60%{transform:scale(1.12) rotate(2deg);opacity:1}100%{transform:scale(1) rotate(0)}}
+@keyframes blockIn{from{transform:translateY(24px);opacity:0}to{transform:none;opacity:1}}
+@keyframes bump{0%{transform:scale(1)}35%{transform:scale(1.4) rotate(-5deg)}100%{transform:scale(1)}}
+@keyframes stripesMove{to{background-position:68px 0}}
+@keyframes stickerBounce{from{translate:0 0}to{translate:0 -6px}}
+@keyframes frameShake{0%,100%{rotate:0deg}25%{rotate:-1.2deg}75%{rotate:1.2deg}}
+@keyframes btnIdle{0%,100%{translate:0 0}50%{translate:0 -3px}}
+@keyframes shakeX{0%,100%{translate:0 0}25%{translate:-3px 0}75%{translate:3px 0}}
+.pop,.bump{animation:bump .35s cubic-bezier(.2,1.6,.4,1)}
+
+/* Entrada escalonada de los bloques de cada vista */
+.view-active .slots-container>*,.view-active .bj-container>*,.view-active .main-grid>*{animation:blockIn .5s cubic-bezier(.2,1.2,.4,1) both}
+.view-active .slots-container>:nth-child(2),.view-active .bj-container>:nth-child(2),.view-active .main-grid>:nth-child(1){animation-delay:.07s}
+.view-active .slots-container>:nth-child(3),.view-active .bj-container>:nth-child(3),.view-active .main-grid>:nth-child(2){animation-delay:.14s}
+.view-active .slots-container>:nth-child(4),.view-active .main-grid>:nth-child(3){animation-delay:.21s}
+.view-active .slots-container>:nth-child(5){animation-delay:.28s}
+
+/* --- Titulos de cada juego: etiqueta ladeada --- */
+.slots-title,.bj-title{display:inline-block;background:var(--cream);color:var(--ink);-webkit-text-fill-color:var(--ink);
+  border:4px solid var(--ink);box-shadow:6px 6px 0 var(--ink);padding:.1rem 1.1rem;rotate:-2deg;text-shadow:none;letter-spacing:.04em;margin-bottom:1.4rem}
+.header-sub{font-family:'Lilita One',sans-serif;text-transform:uppercase;letter-spacing:.08em;font-size:.85rem}
+.header-stat{background:var(--bg-card);border:3px solid var(--ink);border-radius:8px;box-shadow:4px 4px 0 var(--ink);padding:.35rem .9rem}
+.stat-label{font-family:'Lilita One',sans-serif;text-transform:uppercase;letter-spacing:.08em;color:var(--text-muted)}
+.stat-value{color:var(--cyan);display:inline-block}
+
+/* --- Selector de jugador + fichas --- */
+.game-player-selector{background:var(--bg-card);backdrop-filter:none;border:3px solid var(--ink);border-radius:var(--radius-md);box-shadow:5px 5px 0 var(--ink)}
+.game-player-info{background:var(--ink);border:0;border-radius:8px;padding:.3rem .9rem}
+.game-player-chips{font-family:'Lilita One',sans-serif;font-weight:400;color:var(--cyan);font-size:1.5rem;display:inline-block}
+.chips-label{font-family:'Lilita One',sans-serif;color:var(--text-muted)}
+.bar-value{display:inline-block}
+
+/* --- Botones grandes de accion (SPIN / PULL LEVER / DEAL) --- */
+.btn.btn-spin,.btn.btn-spin-slot,.btn.bj-deal-btn{font-family:'Lilita One',sans-serif;font-weight:400;letter-spacing:.05em;
+  font-size:clamp(1.3rem,3vw,1.7rem);padding:.7rem 2.2rem;border:4px solid var(--ink);border-radius:var(--radius-sm);box-shadow:6px 6px 0 var(--ink);color:var(--ink)}
+.btn.btn-spin{background:var(--pink);color:var(--cream);margin-top:1rem}
+.btn.btn-spin-slot,.btn.bj-deal-btn{background:var(--cyan)}
+.btn.btn-spin:hover:not(:disabled),.btn.btn-spin-slot:hover:not(:disabled),.btn.bj-deal-btn:hover:not(:disabled){transform:translate(-1px,-1px);box-shadow:7px 7px 0 var(--ink)}
+.btn.btn-spin:active:not(:disabled),.btn.btn-spin-slot:active:not(:disabled),.btn.bj-deal-btn:active:not(:disabled){transform:translate(4px,4px);box-shadow:2px 2px 0 var(--ink)}
+.btn.btn-spin:not(:disabled):not(:hover):not(:active),.btn.btn-spin-slot:not(:disabled):not(:hover):not(:active),.btn.bj-deal-btn:not(:disabled):not(:hover):not(:active){animation:btnIdle 1.6s ease-in-out infinite}
+.btn kbd{margin-left:.55rem;min-width:1.6rem;padding:.05rem .45rem;font-size:.7rem;box-shadow:2px 2px 0 var(--ink)}
+
+/* --- Apuesta (- / +) --- */
+.slot-bet-display{font-family:'Lilita One',sans-serif;font-weight:400;color:var(--cyan);text-shadow:none;background:var(--ink);border-radius:8px;padding:.1rem .8rem;display:inline-block;min-width:3.4rem}
+
+/* --- Stickers de resultado (Slots y Blackjack) --- */
+.slot-result,.bj-result{font-family:'Lilita One',sans-serif;font-weight:400;letter-spacing:.03em;text-shadow:none;
+  border:4px solid var(--ink);border-radius:10px;box-shadow:5px 5px 0 var(--ink);background:var(--cream);color:var(--ink);rotate:-1.5deg;padding:.5rem 1.2rem}
+.slot-result:empty,.bj-result:empty{visibility:hidden;box-shadow:none;border-color:transparent}
+.slot-result.win,.slot-result.lose,.slot-result.jackpot,.bj-result.win,.bj-result.lose,.bj-result.push,.bj-result.blackjack{
+  border:4px solid var(--ink);text-shadow:none;font-size:1.25rem;animation:stickerPop .45s cubic-bezier(.2,1.4,.4,1) both}
+.slot-result.win,.bj-result.win{background:var(--cyan);color:var(--ink)}
+.slot-result.lose,.bj-result.lose{background:var(--purple-700);color:var(--cream)}
+.bj-result.push{background:var(--cream);color:var(--ink)}
+.slot-result.jackpot,.bj-result.blackjack{background:var(--pink);color:var(--cream);font-size:1.5rem;
+  animation:stickerPop .5s cubic-bezier(.2,1.4,.4,1) both,stickerBounce .7s ease-in-out .5s infinite alternate}
+
+/* Confeti superpuesto (lo crea js/ui/confetti.js) */
+.fx-confetti{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:20}
+
+/* ===== WHEEL OF FORTUNE ===== */
+#wheel{border:6px solid var(--ink);box-shadow:8px 8px 0 var(--ink);background:var(--bg-card)}
+#pointer{top:-20px;width:46px;transform-origin:50% 20%;filter:drop-shadow(3px 3px 0 var(--ink))}
+#pointer path{fill:var(--pink);stroke:var(--ink);stroke-width:4}
+#pointer circle{fill:var(--cream);stroke:var(--ink);stroke-width:2}
+@keyframes pointerTick{0%{transform:translateX(-50%) rotate(0)}30%{transform:translateX(-50%) rotate(-16deg)}100%{transform:translateX(-50%) rotate(0)}}
+#pointer.tick{animation:pointerTick .12s ease-out}
+@keyframes wheelThump{0%{transform:scale(1)}30%{transform:scale(1.035) rotate(-.8deg)}100%{transform:scale(1)}}
+#wheelWrap.landed{animation:wheelThump .45s ease-out}
+#statusText{font-family:'Lilita One',sans-serif;text-transform:uppercase;letter-spacing:.06em;color:var(--cream)}
+
+/* Modal del ganador (solo #modal; tienda y admin no cambian) */
+#modal{background:rgba(10,7,24,.88);backdrop-filter:none}
+#modal .modal-card{border:4px solid var(--ink);box-shadow:10px 10px 0 var(--ink);background:var(--bg-card);animation:stickerPop .5s cubic-bezier(.2,1.4,.4,1) both}
+#modal .modal-eyebrow{display:inline-block;background:var(--cream);color:var(--ink);border:3px solid var(--ink);box-shadow:3px 3px 0 var(--ink);
+  padding:.15rem .9rem;font-family:'Lilita One',sans-serif;letter-spacing:.12em;rotate:-3deg;margin-bottom:1rem}
+#modal .modal-winner-name{font-family:'Lilita One',sans-serif;font-weight:400;text-transform:uppercase;color:var(--pink);text-shadow:4px 4px 0 var(--ink)}
+
+/* ===== SLOTS ===== */
+.slot-frame{position:relative;background-color:var(--pink);border:4px solid var(--ink);border-radius:var(--radius-lg);box-shadow:8px 8px 0 var(--ink);padding:1.4rem 1.2rem;overflow:hidden}
+.slot-reel-container{gap:.7rem}
+.slot-reel{box-sizing:content-box;background:var(--cream);border:4px solid var(--ink);border-radius:var(--radius-md);box-shadow:none}
+.slot-reel::before,.slot-reel::after{display:none}
+.slot-symbol{filter:none}
+.slot-reel.is-moving .slot-symbol{filter:blur(2.5px)}
+.slot-line{height:5px;background:var(--cyan);box-shadow:0 0 0 3px var(--ink)}
+
+/* Rebote al detenerse cada carrete */
+@keyframes landBounce{0%{translate:0 -12px}35%{translate:0 8px}65%{translate:0 -4px}100%{translate:0 0}}
+.slot-reel.land .slot-reel-inner{animation:landBounce .45s ease-out}
+/* Carretes ganadores */
+@keyframes reelWin{0%,100%{rotate:0deg}25%{rotate:-4deg}75%{rotate:4deg}}
+.slot-reel.win{background:var(--cyan);outline:4px solid var(--cream);outline-offset:2px;animation:reelWin .5s ease-in-out 2}
+/* Jackpot: franjas rosa/cian en movimiento + sacudida */
+.slot-machine.jackpot .slot-frame{background-image:linear-gradient(135deg,var(--pink) 25%,var(--cyan) 25%,var(--cyan) 50%,var(--pink) 50%,var(--pink) 75%,var(--cyan) 75%);
+  background-size:68px 68px;animation:stripesMove .8s linear infinite,frameShake .5s ease-in-out 3}
+
+/* Tabla de pagos */
+.slot-paytable{rotate:1deg}
+.paytable-row{background:var(--bg-input);border:3px solid var(--ink);border-radius:8px;font-family:'Lilita One',sans-serif;letter-spacing:.03em}
+.paytable-row.jackpot{background:var(--pink);color:var(--cream);border:3px solid var(--ink)}
+.paytable-row.mini{font-style:normal;color:var(--text-muted)}
+
+/* ===== BLACKJACK ===== */
+.bj-table{background-color:#2a2147;background-image:radial-gradient(rgba(255,244,224,.07) 2px,transparent 2.5px);background-size:24px 24px;
+  border:4px solid var(--ink);border-radius:var(--radius-xl);box-shadow:8px 8px 0 var(--ink);overflow:hidden}
+.bj-table::before{display:none}
+.bj-hand-label{font-family:'Lilita One',sans-serif;font-size:1rem;color:var(--cream)}
+.bj-score-badge{background:var(--cyan);color:var(--ink);text-shadow:none;border:3px solid var(--ink);border-radius:8px;
+  box-shadow:3px 3px 0 var(--ink);min-width:2.4rem;padding:0 .4rem;font-family:'Lilita One',sans-serif;font-weight:400;rotate:-4deg;transition:background .2s}
+.bj-score-badge:empty{visibility:hidden}
+.bj-score-badge.bust{background:var(--pink);color:var(--cream);animation:shakeX .35s ease-in-out 2}
+.bj-cards{min-height:112px}
+
+/* VS como rombo (igual que el nodo START del hub) */
+.bj-vs{font-size:0;letter-spacing:0;display:grid;place-items:center;width:2.6rem;height:2.6rem;padding:0;margin:.6rem 0;
+  background:var(--pink);border:4px solid var(--ink);border-radius:10px;box-shadow:3px 3px 0 var(--ink);transform:rotate(45deg)}
+.bj-vs::after{content:'VS';font:400 .95rem 'Lilita One',sans-serif;color:var(--cream);transform:rotate(-45deg)}
+
+/* Cartas: reparto deslizante + volteo 3D de la carta oculta */
+.bj-card{width:76px;height:106px;background:none;border:0;box-shadow:none;animation:none;transition:none;perspective:700px;display:block}
+.bj-card.red{color:#e0245e}
+.bj-card.black{color:var(--ink)}
+@keyframes cardSlide{from{transform:translate(140px,-100px) rotate(18deg) scale(.6);opacity:0}to{transform:none;opacity:1}}
+.bj-card.deal-in{animation:cardSlide .5s cubic-bezier(.2,1.2,.4,1) both;animation-delay:var(--d,0s)}
+.bj-inner{position:relative;width:100%;height:100%;transform-style:preserve-3d;transition:transform .6s cubic-bezier(.3,1.3,.5,1)}
+.bj-card.is-down .bj-inner{transform:rotateY(180deg)}
+.bj-face{position:absolute;inset:0;display:grid;place-items:center;backface-visibility:hidden;-webkit-backface-visibility:hidden;
+  border:3px solid var(--ink);border-radius:8px;box-shadow:4px 4px 0 var(--ink)}
+.bj-front{background:var(--cream);font-family:'Lilita One',sans-serif;font-size:1.35rem;line-height:1.05;text-align:center}
+.bj-back{transform:rotateY(180deg);background:repeating-linear-gradient(45deg,var(--pink) 0 8px,#d92b78 8px 16px)}
+.bj-back::after{content:'?';font:400 1.8rem 'Lilita One',sans-serif;color:var(--cream)}
+
+/* Acciones */
+.bj-actions .btn{font-family:'Lilita One',sans-serif;font-weight:400;font-size:1.3rem;padding:.7rem 1.8rem}
+#bjStandBtn{background:var(--purple-600)}
+
+/* ===== Movil ===== */
+@media (max-width:700px){
+  .slot-frame{padding:1rem .7rem}
+  .bj-card{width:60px;height:84px}
+  .bj-front{font-size:1.05rem}
+}
+
+/* ===== Reduced motion ===== */
+@media (prefers-reduced-motion:reduce){
+  #viewWheel *,#viewRoulette *,#viewSlots *,#viewBlackjack *,#modal *{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
+}
+
+/* ===== VIEWPORT 1080p: Wheel · Slots · Blackjack compactos (>=1200px) ===== */
+:root{--stage-h:calc(100dvh - 64px - 88px)}
+.header-sub{display:none}
+.rl-title,.slots-title,.bj-title{margin-bottom:.4rem}
+@media (min-width:1200px) and (min-height:700px){
+  /* Slots: 3 columnas */
+  .slots-container{max-width:1600px;padding:.5rem 1.2rem 0;display:grid;gap:.9rem 1.2rem;align-items:start;
+    grid-template-columns:300px 1fr 300px;grid-template-rows:auto auto 1fr;grid-template-areas:"t t t" "sel m pay" "his m pay"}
+  .slots-title{grid-area:t;justify-self:center;font-size:2.2rem}
+  .slots-container>.game-player-selector{grid-area:sel;margin:0;flex-direction:column;align-items:stretch;gap:.5rem}
+  .slot-machine{grid-area:m;position:relative;width:100%;max-width:760px;justify-self:center;gap:.8rem;
+    background:var(--bg-card);border:4px solid var(--ink);border-radius:var(--radius-lg);box-shadow:10px 10px 0 var(--ink);padding:1rem 1.4rem 1.2rem}
+  .slot-paytable{grid-area:pay;margin:0}
+  .slot-history-panel{grid-area:his;margin:0!important;max-width:none!important}
+  #slotsHistory{max-height:34dvh!important}
+  .slot-frame{width:100%;padding:2.6rem 1.6rem 1.6rem}
+  .slot-frame::before{content:"";position:absolute;left:0;right:0;top:.7rem;height:14px;
+    background:radial-gradient(circle,var(--cream) 0 4px,var(--ink) 4.5px 5.5px,transparent 6px) 0 0/28px 14px repeat-x;animation:bulbs 1s steps(2) infinite}
+  .slot-reel-container{justify-content:center;gap:1rem}
+  .slot-reel{width:150px;height:180px;box-shadow:inset 0 10px 0 rgba(26,21,48,.18),inset 0 -10px 0 rgba(26,21,48,.18)}
+  .slot-symbol{width:150px;height:180px;font-size:5rem}
+  .slot-controls{width:100%;justify-content:space-between;background:var(--ink);border-radius:var(--radius-md);padding:.7rem 1rem}
+  .slot-controls .form-label{color:var(--cream)}
+  .slot-tray{width:70%;height:22px;display:flex;justify-content:space-around;align-items:center;background:var(--ink);border-radius:0 0 40px 40px}
+  .slot-tray span{width:22px;height:8px;border-radius:50%;background:var(--cyan);box-shadow:0 0 0 2px var(--cream)}
+  .slot-lever{position:absolute;right:-46px;top:120px;width:30px;height:150px}
+  .slot-lever::before{content:"";position:absolute;left:11px;top:22px;width:8px;height:110px;background:var(--ink);border-radius:4px;transform-origin:50% 100%;transition:transform .25s}
+  .slot-lever i{position:absolute;left:0;top:0;width:30px;height:30px;border-radius:50%;background:var(--pink);border:4px solid var(--ink);box-shadow:3px 3px 0 var(--ink);transition:transform .25s}
+  .slot-machine.pulling .slot-lever i{transform:translateY(100px)}
+  .slot-machine.pulling .slot-lever::before{transform:scaleY(.25)}
+  /* Blackjack: compactacion */
+  .bj-container{padding:.5rem 1.2rem 0;max-width:1300px}
+  .bj-table{padding:1rem 1.2rem}
+}
+@keyframes bulbs{50%{opacity:.35}}
+@media (prefers-reduced-motion:reduce){.slot-frame::before{animation:none}}
+
+/* ===== PLAYERS (sección propia) ===== */
+.players-container{max-width:1200px;margin:0 auto;padding:1rem 1.2rem 0;text-align:center}
+.players-title{display:inline-block;background:var(--cream);color:var(--ink);-webkit-text-fill-color:var(--ink);border:4px solid var(--ink);box-shadow:6px 6px 0 var(--ink);padding:.1rem 1.1rem;rotate:-2deg;letter-spacing:.04em;margin-bottom:1rem;font-size:2.2rem}
+.players-grid{display:grid;gap:1.2rem;text-align:left;align-items:start}
+@media (min-width:960px){.players-grid{grid-template-columns:380px 1fr}}
+.players-grid .panel-actions{display:flex;flex-wrap:wrap;gap:.5rem;margin-top:1rem}
+#playersRoster{max-height:calc(var(--stage-h) - 150px)}
+#roster .player-actions{display:none}
+
+/* ===== WHEEL OF FORTUNE rediseñada ===== */
+.rl-container{max-width:1700px;margin:0 auto;padding:.5rem 1.2rem 0}
+.rl-head{display:flex;align-items:center;justify-content:space-between;gap:1rem;margin-bottom:.8rem}
+.rl-title{display:inline-block;background:var(--cream);color:var(--ink);-webkit-text-fill-color:var(--ink);border:4px solid var(--ink);box-shadow:6px 6px 0 var(--ink);padding:.1rem 1.1rem;rotate:-2deg;letter-spacing:.04em;font-size:2.2rem;margin:.2rem 0}
+.rl-stats{display:flex;gap:.8rem}
+.rl-grid{display:grid;gap:1.2rem;grid-template-columns:1fr}
+.rl-side{display:flex;flex-direction:column;gap:1rem;min-height:0}
+.rl-center{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.7rem}
+@media (min-width:1200px) and (min-height:700px){
+  .rl-grid{grid-template-columns:280px 1fr 320px;height:calc(var(--stage-h) - 80px)}
+  .rl-grid>*{min-height:0}
+  .rl-fill{flex:1;min-height:0;display:flex;flex-direction:column}
+  .rl-fill .scroll{flex:1;min-height:0;overflow-y:auto}
+  #wheelWrap{width:min(100%,calc(var(--stage-h) - 220px))}
+}
+
+/* ===== ROULETTE (mesa europea) ===== */
+.rt-container{max-width:1800px;margin:0 auto;padding:.5rem 1.2rem 0}
+.rt-head{display:flex;align-items:center;gap:1rem;flex-wrap:wrap;margin-bottom:.8rem}
+.rt-title{display:inline-block;background:var(--cream);color:var(--ink);-webkit-text-fill-color:var(--ink);border:4px solid var(--ink);box-shadow:6px 6px 0 var(--ink);padding:.1rem 1.1rem;rotate:-2deg;letter-spacing:.04em;font-size:2.2rem;margin:.2rem 0}
+.rt-player{margin:0!important;display:flex;flex-direction:row;align-items:center;gap:.8rem;padding:.4rem .9rem}
+.rt-avail{font-family:'Lilita One',sans-serif;color:var(--cream)}
+.rt-last{display:flex;gap:.35rem;margin-left:auto}
+.rt-num{width:34px;height:34px;border-radius:50%;border:3px solid var(--ink);display:grid;place-items:center;font-family:'Lilita One',sans-serif;font-size:.95rem;color:var(--cream)}
+.rt-num.red,.rt-cell.red,.rt-big.red{background:var(--pink);color:var(--cream)}
+.rt-num.black,.rt-cell.black,.rt-big.black{background:#14102b;color:var(--cream)}
+.rt-num.green,.rt-cell.green,.rt-big.green{background:#2fbf71;color:var(--ink)}
+.rt-grid{display:grid;gap:1.2rem;grid-template-columns:1fr}
+.rt-wheelbox{position:relative;display:flex;flex-direction:column;align-items:center;gap:.8rem}
+#rlWheel{width:100%;max-width:440px;aspect-ratio:1}
+.rt-result{width:100%;min-height:90px;display:flex;align-items:center;gap:1rem;font-family:'Lilita One',sans-serif}
+.rt-big{width:72px;height:72px;border-radius:50%;border:4px solid var(--ink);box-shadow:4px 4px 0 var(--ink);display:grid;place-items:center;font-size:2rem;flex:none}
+.rt-rows{flex:1;max-height:160px;overflow-y:auto}
+.rt-res{display:grid;grid-template-columns:1fr 1.4fr auto;gap:.5rem;font-size:.9rem;padding:.15rem 0}
+.rt-res.win b{color:var(--cyan)}.rt-res.lose b{color:var(--pink)}
+.rt-board{display:grid;grid-template-columns:.8fr repeat(12,1fr) 1fr;grid-template-rows:repeat(3,54px) repeat(3,44px);gap:3px;margin-bottom:.8rem}
+.rt-cell{position:relative;border:3px solid var(--ink);border-radius:8px;font-family:'Lilita One',sans-serif;font-size:1.05rem;cursor:pointer;background:var(--bg-input);color:var(--cream);padding:0;box-shadow:2px 2px 0 var(--ink)}
+.rt-cell small{opacity:.8;font-size:.7rem}
+.rt-cell:hover{transform:translate(-1px,-1px)}
+.rt-cell.mine{outline:3px solid var(--cyan);outline-offset:1px}
+.rt-chip{position:absolute;right:-6px;top:-9px;min-width:24px;height:24px;padding:0 3px;border-radius:12px;background:var(--cream);color:var(--ink);border:3px solid var(--ink);font-size:.7rem;display:grid;place-items:center;z-index:1}
+.rt-chip[hidden]{display:none}.rt-chip.other{background:var(--cyan)}
+.rt-toolbar{display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;margin-bottom:.6rem}
+.rt-chips,.rt-actions{display:flex;gap:.5rem;align-items:center}
+.rt-chipbtn{width:46px;height:46px;border-radius:50%;border:4px dashed var(--cream);outline:3px solid var(--ink);font-family:'Lilita One',sans-serif;color:var(--cream);cursor:pointer;background:#14102b}
+.rt-chipbtn.c5{background:#e0245e}.rt-chipbtn.c10{background:#2f6fe0}.rt-chipbtn.c25{background:#2fbf71}.rt-chipbtn.c100{background:#7c3aed}
+.rt-chipbtn.active{transform:translateY(-4px);box-shadow:0 5px 0 var(--ink)}
+.rt-prow{display:flex;align-items:center;gap:.5rem;padding:.35rem .5rem;border:3px solid transparent;border-radius:8px;cursor:pointer}
+.rt-prow.active{border-color:var(--cyan)}
+.rt-pname{flex:1;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rt-pstake{font-family:'Lilita One',sans-serif;color:var(--cyan)}
+@media (min-width:1200px) and (min-height:700px){
+  .rt-grid{grid-template-columns:480px 1fr 300px;height:calc(var(--stage-h) - 90px);align-items:stretch}
+  .rt-grid>*{min-height:0;overflow-y:auto}
+}
