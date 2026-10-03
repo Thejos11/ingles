@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<!--
+  ROULETTE ROYALE — Classroom Edition
+  Single-file app: HTML + Tailwind (CDN) + vanilla JS. State persists in localStorage.
+
+  HOW IT PLAYS
+  1. Teacher adds players (one by one, or paste a list separated by commas / new lines).
+  2. Students place bets: pick a bettor, pick the student they think the wheel will stop on, set an amount.
+  3. Spin. The wheel picks one student at random (fair odds). Every bet on that student pays N-to-1
+     (N = number of players), i.e. stake back + (N-1) x stake profit. Losing stakes are gone.
+  4. Spinning with no bets is a plain "pick a random student" spin.
+-->
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Roulette Royale — Classroom Edition</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:wght@600;800&family=Figtree:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  /* ---------- Design tokens ---------- */
+  :root {
+    --felt: #0b3d2e;  --felt-deep: #06261d;  --slate: #1a232e;  --slate-2: #232f3d;
+    --gold: #d4af37;  --gold-soft: #f0d77a;  --red: #a3202f;    --text: #ecebe4;  --muted: #94a3a0;
+  }
+  html, body { height: 100%; }
+  body {
+    font-family: 'Figtree', system-ui, sans-serif; color: var(--text);
+    background: radial-gradient(ellipse at 50% 30%, var(--felt) 0%, var(--felt-deep) 70%) fixed;
+  }
+  .display { font-family: 'Bodoni Moda', Georgia, serif; }
+  .panel { background: rgba(26,35,46,.92); border: 1px solid rgba(212,175,55,.35); border-radius: 14px; }
+  .field {
+    width: 100%; background: #0f1620; color: var(--text); border: 1px solid #33414f;
+    border-radius: 8px; padding: .55rem .7rem; font-size: 1rem;
+  }
+  .field:focus-visible, button:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+  .btn { border-radius: 8px; padding: .55rem 1rem; font-weight: 700; transition: filter .15s, transform .1s; }
+  .btn:hover:not(:disabled) { filter: brightness(1.12); }
+  .btn:active:not(:disabled) { transform: translateY(1px); }
+  .btn:disabled { opacity: .45; cursor: not-allowed; }
+  .btn-gold { background: linear-gradient(#f0d77a, #c99f2b); color: #1b1503; }
+  .btn-ghost { background: transparent; border: 1px solid #4a5a6a; color: var(--text); }
+  .btn-danger { background: transparent; border: 1px solid var(--red); color: #f2a2ab; }
+  .chip-btn { background: #0f1620; border: 1px dashed var(--gold); color: var(--gold-soft); border-radius: 999px; padding: .2rem .7rem; font-weight: 600; font-size: .85rem; }
+  .row { display: flex; align-items: center; gap: .5rem; padding: .45rem .6rem; border-radius: 8px; background: rgba(15,22,32,.7); }
+  .row + .row { margin-top: .35rem; }
+  .scroll { overflow-y: auto; scrollbar-width: thin; scrollbar-color: #4a5a6a transparent; }
+
+  /* ---------- Wheel ---------- */
+  #wheelWrap { position: relative; width: min(100%, 74vh, 760px); aspect-ratio: 1; margin: 0 auto; }
+  #wheel { width: 100%; height: 100%; border-radius: 50%; box-shadow: 0 0 0 6px #7a5c10, 0 0 60px rgba(212,175,55,.35), 0 20px 60px rgba(0,0,0,.6); }
+  #pointer { position: absolute; top: -14px; left: 50%; width: 46px; transform: translateX(-50%); filter: drop-shadow(0 3px 4px rgba(0,0,0,.7)); z-index: 2; }
+  body.busy .lockable { pointer-events: none; opacity: .5; }
+
+  /* ---------- Modal + toast ---------- */
+  #modal { position: fixed; inset: 0; display: none; align-items: center; justify-content: center; background: rgba(3,10,8,.82); z-index: 50; padding: 1rem; }
+  #modal.open { display: flex; }
+  #modalCard { max-width: 34rem; width: 100%; text-align: center; padding: 2.2rem 1.6rem; border: 2px solid var(--gold); border-radius: 18px;
+    background: radial-gradient(circle at 50% 0%, #14563f, var(--slate) 75%); box-shadow: 0 0 80px rgba(212,175,55,.45);
+    animation: pop .45s cubic-bezier(.2,1.4,.4,1); }
+  @keyframes pop { from { transform: scale(.7); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+  #toasts { position: fixed; bottom: 1rem; left: 50%; transform: translateX(-50%); z-index: 60; display: grid; gap: .4rem; }
+  .toast { background: #0f1620; border: 1px solid var(--gold); padding: .6rem 1rem; border-radius: 10px; box-shadow: 0 6px 20px rgba(0,0,0,.5); }
+  .toast.err { border-color: #e0566a; }
+  @media (prefers-reduced-motion: reduce) { #modalCard { animation: none; } }
+</style>
+</head>
+<body class="p-3 lg:p-5">
+
+<header class="flex flex-wrap items-center justify-between gap-3 mb-4">
+  <div>
+    <h1 class="display text-3xl lg:text-5xl font-extrabold" style="color:var(--gold-soft)">Roulette Royale</h1>
+    <p class="text-sm lg:text-base" style="color:var(--muted)">Classroom edition — place your chips, spin the wheel.</p>
+  </div>
+  <div class="text-right">
+    <div class="text-sm" style="color:var(--muted)">Players</div>
+    <div id="playerCount" class="display text-3xl font-extrabold" style="color:var(--gold)">0</div>
+  </div>
+</header>
+
+<main class="grid gap-4 lg:grid-cols-[300px_minmax(0,1fr)_330px] items-start">
+
+  <!-- ===== LEFT: Player management (teacher) ===== -->
+  <aside class="panel p-4 lockable">
+    <h2 class="display text-xl font-bold mb-3" style="color:var(--gold-soft)">Players</h2>
+    <label for="namesInput" class="text-sm" style="color:var(--muted)">Add names (one per line, or separated by commas)</label>
+    <textarea id="namesInput" rows="4" class="field mt-1" placeholder="Ana, Luis, Marta&#10;Pedro"></textarea>
+    <div class="flex items-end gap-2 mt-2">
+      <div class="flex-1">
+        <label for="startChips" class="text-sm" style="color:var(--muted)">Starting chips</label>
+        <input id="startChips" type="number" min="1" value="100" class="field">
+      </div>
+      <button id="addBtn" class="btn btn-gold">Add players</button>
+    </div>
+    <div id="roster" class="scroll mt-4 max-h-[42vh]"></div>
+    <div class="flex gap-2 mt-3">
+      <button id="resetBtn" class="btn btn-ghost flex-1 text-sm">Reset balances</button>
+      <button id="clearBtn" class="btn btn-danger flex-1 text-sm">Remove all</button>
+    </div>
+  </aside>
+
+  <!-- ===== CENTER: Wheel ===== -->
+  <section class="text-center">
+    <div id="wheelWrap">
+      <svg id="pointer" viewBox="0 0 46 60" aria-hidden="true"><path d="M23 58 L3 8 Q23 -4 43 8 Z" fill="#f0d77a" stroke="#7a5c10" stroke-width="3"/><circle cx="23" cy="16" r="5" fill="#a3202f"/></svg>
+      <canvas id="wheel" width="1000" height="1000" aria-label="Roulette wheel"></canvas>
+    </div>
+    <p id="status" class="mt-4 text-lg min-h-[1.75rem]" style="color:var(--muted)" aria-live="polite"></p>
+    <button id="spinBtn" class="btn btn-gold display text-2xl lg:text-3xl px-10 py-3 mt-1">SPIN</button>
+  </section>
+
+  <!-- ===== RIGHT: Betting ===== -->
+  <aside class="grid gap-4">
+    <div class="panel p-4 lockable">
+      <h2 class="display text-xl font-bold mb-3" style="color:var(--gold-soft)">Place a bet</h2>
+      <label for="bettor" class="text-sm" style="color:var(--muted)">Who is betting?</label>
+      <select id="bettor" class="field mb-2"></select>
+      <label for="target" class="text-sm" style="color:var(--muted)">Which student will win?</label>
+      <select id="target" class="field mb-2"></select>
+      <label for="amount" class="text-sm" style="color:var(--muted)">Chips to bet</label>
+      <input id="amount" type="number" min="1" value="10" class="field">
+      <div class="flex flex-wrap gap-2 mt-2">
+        <button class="chip-btn" data-amt="5">5</button><button class="chip-btn" data-amt="10">10</button>
+        <button class="chip-btn" data-amt="25">25</button><button class="chip-btn" data-amt="50">50</button>
+        <button class="chip-btn" data-amt="all">All in</button>
+      </div>
+      <button id="betBtn" class="btn btn-gold w-full mt-3">Place bet</button>
+      <p id="odds" class="text-sm mt-2" style="color:var(--muted)"></p>
+    </div>
+
+    <div class="panel p-4">
+      <h2 class="display text-xl font-bold mb-2" style="color:var(--gold-soft)">Bet slip</h2>
+      <div id="slip" class="scroll max-h-[24vh]"></div>
+    </div>
+
+    <div class="panel p-4">
+      <h2 class="display text-xl font-bold mb-2" style="color:var(--gold-soft)">Recent winners</h2>
+      <div id="history" class="text-sm"></div>
+    </div>
+  </aside>
+</main>
+
+<!-- Winner banner -->
+<div id="modal" role="dialog" aria-modal="true" aria-labelledby="winnerName">
+  <div id="modalCard">
+    <div style="color:var(--gold-soft)">The wheel has chosen</div>
+    <div id="winnerName" class="display text-5xl lg:text-6xl font-extrabold my-3" style="color:var(--gold)"></div>
+    <div id="payouts" class="text-left my-4 scroll max-h-[30vh]"></div>
+    <button id="closeModal" class="btn btn-gold px-8">Keep playing</button>
+  </div>
+</div>
+<div id="toasts" aria-live="polite"></div>
+
+<script>
+/* =====================================================================
+   STATE  — everything the app needs lives in one object, saved on change
+   ===================================================================== */
+const KEY = 'roulette-royale-classroom-v1';
+let state = load();          // { students:[{id,name,balance}], startChips, bets:[{id,bettor,target,amount}], history:[] }
+let rotation = 0;            // current wheel angle (radians)
+let spinning = false;
+
+function load() {
+  const fresh = { students: [], startChips: 100, bets: [], history: [] };
+  try { return Object.assign(fresh, JSON.parse(localStorage.getItem(KEY)) || {}); }
+  catch (e) { return fresh; }
+}
+function save() { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) { /* storage unavailable */ } }
+
+/* ---------- Small helpers ---------- */
+const $ = id => document.getElementById(id);
+const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+const byId = id => state.students.find(s => s.id === id);
+const esc = s => s.replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const chips = n => n.toLocaleString('en-US') + ' chips';
+
+function toast(msg, isError) {
+  const t = document.createElement('div');
+  t.className = 'toast' + (isError ? ' err' : '');
+  t.textContent = msg;
+  $('toasts').appendChild(t);
+  setTimeout(() => t.remove(), 3200);
+}
+
+/* =====================================================================
+   PLAYER MANAGEMENT
+   ===================================================================== */
+function addPlayers() {
+  if (spinning) return;
+  const start = Math.max(1, parseInt($('startChips').value, 10) || 100);
+  const names = $('namesInput').value.split(/[,;\n]+/).map(s => s.trim()).filter(Boolean);
+  if (!names.length) return toast('Type at least one name first.', true);
+
+  const known = new Set(state.students.map(s => s.name.toLowerCase()));
+  let added = 0, skipped = 0;
+  names.forEach(n => {
+    if (known.has(n.toLowerCase())) { skipped++; return; }
+    known.add(n.toLowerCase());
+    state.students.push({ id: uid(), name: n.slice(0, 40), balance: start });
+    added++;
+  });
+  state.startChips = start;
+  $('namesInput').value = '';
+  save(); render();
+  toast(`Added ${added} player${added === 1 ? '' : 's'}` + (skipped ? ` · ${skipped} duplicate${skipped === 1 ? '' : 's'} skipped` : '') + '.', !added);
+}
+
+/** Removes a student; any pending bets that involve them are cancelled and refunded. */
+function removeStudent(id) {
+  if (spinning) return;
+  state.bets.filter(b => b.bettor === id || b.target === id).forEach(refundBet);
+  state.students = state.students.filter(s => s.id !== id);
+  save(); render();
+}
+function refundBet(bet) {
+  const bettor = byId(bet.bettor);
+  if (bettor) bettor.balance += bet.amount;
+  state.bets = state.bets.filter(b => b.id !== bet.id);
+}
+function clearAll() {
+  if (spinning || !state.students.length) return;
+  if (!confirm('Remove every player and all bets?')) return;
+  state.students = []; state.bets = []; state.history = [];
+  save(); render();
+}
+function resetBalances() {
+  if (spinning || !state.students.length) return;
+  if (!confirm(`Give every player ${state.startChips} chips again? Pending bets will be cancelled.`)) return;
+  state.bets = [];
+  state.students.forEach(s => s.balance = state.startChips);
+  save(); render(); toast('All balances reset.');
+}
+
+/* =====================================================================
+   BETTING
+   ===================================================================== */
+function placeBet() {
+  if (spinning) return;
+  const bettor = byId($('bettor').value), target = byId($('target').value);
+  const amount = Math.floor(Number($('amount').value));
+  if (state.students.length < 2) return toast('Add at least 2 players to start betting.', true);
+  if (!bettor || !target) return toast('Choose a bettor and a student to bet on.', true);
+  if (!(amount >= 1)) return toast('Bet at least 1 chip.', true);
+  if (amount > bettor.balance) return toast(`${bettor.name} only has ${chips(bettor.balance)}.`, true);
+
+  bettor.balance -= amount;                                   // stake leaves the balance immediately
+  state.bets.push({ id: uid(), bettor: bettor.id, target: target.id, amount });
+  save(); render();
+  toast(`${bettor.name} bets ${amount} on ${target.name}.`);
+}
+
+/* =====================================================================
+   WHEEL DRAWING (canvas)
+   ===================================================================== */
+const canvas = $('wheel'), ctx = canvas.getContext('2d');
+const SIZE = canvas.width, C = SIZE / 2, R = C - 8;
+
+/** Slice colour: alternate red / slate; if the count is odd the last slice is green (like the zero pocket). */
+function sliceColor(i, n) {
+  if (n % 2 === 1 && i === n - 1) return '#0f6b45';
+  return i % 2 === 0 ? '#a3202f' : '#1a232e';
+}
+
+function drawWheel() {
+  const n = state.students.length;
+  ctx.clearRect(0, 0, SIZE, SIZE);
+  ctx.save();
+  ctx.translate(C, C);
+  ctx.rotate(rotation);
+
+  if (n === 0) {                                              // empty wheel placeholder
+    ctx.beginPath(); ctx.arc(0, 0, R, 0, Math.PI * 2);
+    ctx.fillStyle = '#1a232e'; ctx.fill();
+    ctx.restore();
+    ctx.fillStyle = '#d4af37'; ctx.textAlign = 'center'; ctx.font = '700 44px Figtree, sans-serif';
+    ctx.fillText('Add players to fill the wheel', C, C);
+    return;
+  }
+
+  const arc = Math.PI * 2 / n;
+  const fontSize = Math.max(12, Math.min(46, (Math.PI * 2 * R * 0.7 / n) * 0.6));
+  ctx.font = `700 ${fontSize}px Figtree, sans-serif`;
+  ctx.textBaseline = 'middle';
+
+  state.students.forEach((s, i) => {
+    const a0 = i * arc, a1 = a0 + arc;
+    ctx.beginPath(); ctx.moveTo(0, 0); ctx.arc(0, 0, R, a0, a1); ctx.closePath();
+    ctx.fillStyle = sliceColor(i, n); ctx.fill();
+    ctx.strokeStyle = '#d4af37'; ctx.lineWidth = 3; ctx.stroke();
+
+    ctx.save();                                               // name written along the radius
+    ctx.rotate(a0 + arc / 2);
+    ctx.textAlign = 'right'; ctx.fillStyle = '#f5f1dc';
+    const label = s.name.length > 16 ? s.name.slice(0, 15) + '…' : s.name;
+    ctx.fillText(label, R - 34, 0, R * 0.68);
+    ctx.restore();
+  });
+
+  ctx.beginPath(); ctx.arc(0, 0, 52, 0, Math.PI * 2);         // gold hub
+  const g = ctx.createRadialGradient(-10, -10, 4, 0, 0, 52);
+  g.addColorStop(0, '#f0d77a'); g.addColorStop(1, '#8a6a12');
+  ctx.fillStyle = g; ctx.fill();
+  ctx.restore();
+}
+
+/* =====================================================================
+   SPIN ENGINE
+   ===================================================================== */
+const easeOutQuart = t => 1 - Math.pow(1 - t, 4);            // smooth deceleration
+
+function spin() {
+  const n = state.students.length;
+  if (spinning) return;
+  if (n < 2) return toast('Add at least 2 players before spinning.', true);
+
+  spinning = true;
+  document.body.classList.add('busy');
+  $('spinBtn').disabled = true;
+  $('status').textContent = 'No more bets — the wheel is spinning…';
+
+  // 1) Choose the winner up front (uniform random => fair odds).
+  const w = Math.floor(Math.random() * n);
+  const arc = Math.PI * 2 / n;
+
+  // 2) Work out the final angle so that slice w ends under the pointer (top = -90°),
+  //    landing at a random spot inside the slice (never on the border).
+  const jitter = (Math.random() - 0.5) * 0.7;
+  const target = -Math.PI / 2 - (w + 0.5 + jitter) * arc;
+  const twoPi = Math.PI * 2;
+  const delta = (((target - rotation) % twoPi) + twoPi) % twoPi;
+  const start = rotation;
+  const end = rotation + delta + twoPi * (5 + Math.floor(Math.random() * 3));
+
+  // 3) Animate with requestAnimationFrame.
+  const duration = 7000, t0 = performance.now();
+  (function frame(now) {
+    const t = Math.min(1, (now - t0) / duration);
+    rotation = start + (end - start) * easeOutQuart(t);
+    drawWheel();
+    if (t < 1) requestAnimationFrame(frame);
+    else finishSpin(w);
+  })(t0);
+}
+
+/** Pays winning bets, records history, shows the banner. */
+function finishSpin(w) {
+  const winner = state.students[w], n = state.students.length;
+  const lines = [];
+  state.bets.forEach(b => {
+    const bettor = byId(b.bettor), pick = byId(b.target);
+    if (!bettor || !pick) return;
+    if (b.target === winner.id) {
+      bettor.balance += b.amount * n;                         // stake back + (n-1) x profit
+      lines.push({ win: true, text: `${bettor.name} won ${chips(b.amount * (n - 1))}` });
+    } else {
+      lines.push({ win: false, text: `${bettor.name} lost ${chips(b.amount)} (bet on ${pick.name})` });
+    }
+  });
+  state.bets = [];
+  state.history.unshift({ name: winner.name, bets: lines.length });
+  state.history = state.history.slice(0, 8);
+  save();
+
+  spinning = false;
+  document.body.classList.remove('busy');
+  $('spinBtn').disabled = false;
+  render();
+
+  $('winnerName').textContent = winner.name;
+  $('payouts').innerHTML = lines.length
+    ? lines.map(l => `<div class="row" style="color:${l.win ? '#7be0a4' : '#f2a2ab'}">${l.win ? '▲' : '▼'} ${esc(l.text)}</div>`).join('')
+    : '<div class="row" style="color:var(--muted)">No bets on this spin.</div>';
+  $('modal').classList.add('open');
+  $('closeModal').focus();
+}
+const closeModal = () => $('modal').classList.remove('open');
+
+/* =====================================================================
+   RENDERING
+   ===================================================================== */
+function render() {
+  const n = state.students.length;
+  $('playerCount').textContent = n;
+  $('startChips').value = state.startChips;
+
+  // Roster doubles as a leaderboard (richest first)
+  const sorted = [...state.students].sort((a, b) => b.balance - a.balance);
+  $('roster').innerHTML = sorted.length ? sorted.map(s => `
+    <div class="row">
+      <span class="flex-1 truncate font-semibold">${esc(s.name)}</span>
+      <span style="color:var(--gold)">${s.balance.toLocaleString('en-US')}</span>
+      <button class="btn btn-danger !py-0 !px-2 lockable" data-remove="${s.id}" aria-label="Remove ${esc(s.name)}">✕</button>
+    </div>`).join('') : '<p class="text-sm" style="color:var(--muted)">No players yet. Paste your class list above.</p>';
+
+  // Bettor / target dropdowns (keep the current choice when possible)
+  const keep = id => $(id).value;
+  const [b0, t0] = [keep('bettor'), keep('target')];
+  const opts = state.students.map(s => `<option value="${s.id}">${esc(s.name)} (${s.balance})</option>`).join('');
+  $('bettor').innerHTML = opts; $('target').innerHTML = opts;
+  if (byId(b0)) $('bettor').value = b0;
+  if (byId(t0)) $('target').value = t0;
+
+  $('odds').textContent = n >= 2
+    ? `Winning bets pay ${n - 1} to 1 (you also get your stake back).`
+    : 'Add at least 2 players to open the table.';
+
+  $('slip').innerHTML = state.bets.length ? state.bets.map(b => {
+    const bt = byId(b.bettor), tg = byId(b.target);
+    return `<div class="row"><span class="flex-1 text-sm">${esc(bt.name)} → <b>${esc(tg.name)}</b></span>
+      <span style="color:var(--gold)">${b.amount}</span>
+      <button class="btn btn-ghost !py-0 !px-2 lockable" data-unbet="${b.id}" aria-label="Cancel bet">✕</button></div>`;
+  }).join('') : '<p class="text-sm" style="color:var(--muted)">No bets yet. You can also spin without bets to pick a random student.</p>';
+
+  $('history').innerHTML = state.history.length
+    ? state.history.map((h, i) => `<div class="row"><span class="flex-1 truncate">${esc(h.name)}</span><span style="color:var(--muted)">${h.bets} bet${h.bets === 1 ? '' : 's'}</span></div>`).join('')
+    : '<p style="color:var(--muted)">Nothing spun yet.</p>';
+
+  if (!spinning) {
+    $('status').textContent = n < 2 ? 'Waiting for players…'
+      : state.bets.length ? `${state.bets.length} bet${state.bets.length === 1 ? '' : 's'} on the table — ready when you are.`
+      : 'Place your bets, or just spin.';
+  }
+  drawWheel();
+}
+
+/* =====================================================================
+   EVENTS
+   ===================================================================== */
+$('addBtn').onclick = addPlayers;
+$('namesInput').addEventListener('keydown', e => { if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) addPlayers(); });
+$('clearBtn').onclick = clearAll;
+$('resetBtn').onclick = resetBalances;
+$('betBtn').onclick = placeBet;
+$('spinBtn').onclick = spin;
+$('closeModal').onclick = closeModal;
+$('modal').addEventListener('click', e => { if (e.target.id === 'modal') closeModal(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+
+// Event delegation for dynamic buttons
+document.addEventListener('click', e => {
+  const rm = e.target.closest('[data-remove]');  if (rm) removeStudent(rm.dataset.remove);
+  const ub = e.target.closest('[data-unbet]');
+  if (ub && !spinning) { const bet = state.bets.find(b => b.id === ub.dataset.unbet); if (bet) { refundBet(bet); save(); render(); } }
+  const chip = e.target.closest('[data-amt]');
+  if (chip) {
+    const bettor = byId($('bettor').value);
+    $('amount').value = chip.dataset.amt === 'all' ? (bettor ? bettor.balance : 0) : chip.dataset.amt;
+  }
+});
+
+// Redraw once the web font is ready so wheel labels use it
+if (document.fonts) document.fonts.ready.then(drawWheel);
+render();
+</script>
+</body>
+</html>
